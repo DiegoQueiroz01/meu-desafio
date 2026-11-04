@@ -1,0 +1,12 @@
+rotulo: 00-linha-de-base
+data: 2026-11-04 09:52:27 -0300
+vus: 20
+duracao: 60s
+aquecimento: 15s
+semente: 42
+commit: 7dc20be
+arquivos alterados sem commit: 0
+
+limites dos containers:
+  banco: cpus=1000000000 (1e9 = 1 CPU, 0 = sem limite) memoria=536870912 bytes (0 = sem limite)
+  api: cpus=500000000 (1e9 = 1 CPU, 0 = sem limite) memoria=268435456 bytes (0 = sem limite)
