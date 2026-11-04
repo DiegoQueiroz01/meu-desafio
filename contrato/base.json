@@ -1,0 +1,2414 @@
+{
+  "/clientes/1": {
+    "status": 200,
+    "corpo": {
+      "id": 1,
+      "nome": "Bruno Almeida",
+      "email": "cliente1@exemplo.com",
+      "cidade": "Fortaleza",
+      "criado_em": "2022-01-01T02:11:59.000Z"
+    }
+  },
+  "/clientes/2": {
+    "status": 200,
+    "corpo": {
+      "id": 2,
+      "nome": "Carla Almeida",
+      "email": "cliente2@exemplo.com",
+      "cidade": "Belo Horizonte",
+      "criado_em": "2022-01-01T04:23:58.000Z"
+    }
+  },
+  "/clientes/500": {
+    "status": 200,
+    "corpo": {
+      "id": 500,
+      "nome": "Ursula Vieira",
+      "email": "cliente500@exemplo.com",
+      "cidade": "Brasilia",
+      "criado_em": "2022-02-15T19:51:40.000Z"
+    }
+  },
+  "/clientes/99999": {
+    "status": 200,
+    "corpo": {
+      "id": 99999,
+      "nome": "Paulo Pereira",
+      "email": "Cliente99999@Exemplo.com",
+      "cidade": "Manaus",
+      "criado_em": "2023-02-10T10:01:21.000Z"
+    }
+  },
+  "/clientes/100000": {
+    "status": 200,
+    "corpo": {
+      "id": 100000,
+      "nome": "Queila Pereira",
+      "email": "cliente100000@exemplo.com",
+      "cidade": "Porto Alegre",
+      "criado_em": "2023-02-10T12:13:20.000Z"
+    }
+  },
+  "/clientes/100001": {
+    "status": 404,
+    "corpo": {
+      "erro": "cliente nao encontrado"
+    }
+  },
+  "/clientes/abc": {
+    "status": 400,
+    "corpo": {
+      "erro": "id invalido"
+    }
+  },
+  "/clientes?email=cliente3%40exemplo.com": {
+    "status": 200,
+    "corpo": [
+      {
+        "id": 3,
+        "nome": "Diego Almeida",
+        "email": "Cliente3@Exemplo.com",
+        "cidade": "Manaus",
+        "criado_em": "2022-01-01T06:35:57.000Z"
+      }
+    ]
+  },
+  "/clientes?email=Cliente4%40Exemplo.com": {
+    "status": 200,
+    "corpo": [
+      {
+        "id": 4,
+        "nome": "Elisa Almeida",
+        "email": "cliente4@exemplo.com",
+        "cidade": "Porto Alegre",
+        "criado_em": "2022-01-01T08:47:56.000Z"
+      }
+    ]
+  },
+  "/clientes?email=CLIENTE10%40EXEMPLO.COM": {
+    "status": 200,
+    "corpo": [
+      {
+        "id": 10,
+        "nome": "Karina Almeida",
+        "email": "cliente10@exemplo.com",
+        "cidade": "Goiania",
+        "criado_em": "2022-01-01T21:59:50.000Z"
+      }
+    ]
+  },
+  "/clientes?email=ninguem%40exemplo.com": {
+    "status": 200,
+    "corpo": []
+  },
+  "/clientes": {
+    "status": 400,
+    "corpo": {
+      "erro": "informe o parametro email"
+    }
+  },
+  "/clientes/7/pedidos": {
+    "status": 200,
+    "corpo": [
+      {
+        "id": 329786,
+        "status": "entregue",
+        "criado_em": "2025-09-13T04:46:34.000Z",
+        "total_centavos": 532690,
+        "itens": [
+          {
+            "produto_id": 17650,
+            "produto_nome": "Caneta Premium Modelo 17650",
+            "quantidade": 1,
+            "preco_unitario_centavos": 224490
+          },
+          {
+            "produto_id": 169,
+            "produto_nome": "Caderno Slim Modelo 169",
+            "quantidade": 2,
+            "preco_unitario_centavos": 154100
+          }
+        ]
+      },
+      {
+        "id": 429786,
+        "status": "entregue",
+        "criado_em": "2025-05-04T07:39:54.000Z",
+        "total_centavos": 911280,
+        "itens": [
+          {
+            "produto_id": 17650,
+            "produto_nome": "Caneta Premium Modelo 17650",
+            "quantidade": 2,
+            "preco_unitario_centavos": 224490
+          },
+          {
+            "produto_id": 169,
+            "produto_nome": "Caderno Slim Modelo 169",
+            "quantidade": 3,
+            "preco_unitario_centavos": 154100
+          }
+        ]
+      },
+      {
+        "id": 29786,
+        "status": "entregue",
+        "criado_em": "2024-10-12T20:06:34.000Z",
+        "total_centavos": 532690,
+        "itens": [
+          {
+            "produto_id": 17650,
+            "produto_nome": "Caneta Premium Modelo 17650",
+            "quantidade": 1,
+            "preco_unitario_centavos": 224490
+          },
+          {
+            "produto_id": 169,
+            "produto_nome": "Caderno Slim Modelo 169",
+            "quantidade": 2,
+            "preco_unitario_centavos": 154100
+          }
+        ]
+      },
+      {
+        "id": 129786,
+        "status": "entregue",
+        "criado_em": "2024-06-02T22:59:54.000Z",
+        "total_centavos": 911280,
+        "itens": [
+          {
+            "produto_id": 17650,
+            "produto_nome": "Caneta Premium Modelo 17650",
+            "quantidade": 2,
+            "preco_unitario_centavos": 224490
+          },
+          {
+            "produto_id": 169,
+            "produto_nome": "Caderno Slim Modelo 169",
+            "quantidade": 3,
+            "preco_unitario_centavos": 154100
+          }
+        ]
+      },
+      {
+        "id": 229786,
+        "status": "entregue",
+        "criado_em": "2024-01-23T01:53:14.000Z",
+        "total_centavos": 827570,
+        "itens": [
+          {
+            "produto_id": 17650,
+            "produto_nome": "Caneta Premium Modelo 17650",
+            "quantidade": 3,
+            "preco_unitario_centavos": 224490
+          },
+          {
+            "produto_id": 169,
+            "produto_nome": "Caderno Slim Modelo 169",
+            "quantidade": 1,
+            "preco_unitario_centavos": 154100
+          }
+        ]
+      }
+    ]
+  },
+  "/clientes/42/pedidos": {
+    "status": 200,
+    "corpo": [
+      {
+        "id": 136871,
+        "status": "pago",
+        "criado_em": "2025-12-01T23:29:19.000Z",
+        "total_centavos": 1102980,
+        "itens": [
+          {
+            "produto_id": 3,
+            "produto_nome": "Teclado Ergonomica Modelo 3",
+            "quantidade": 1,
+            "preco_unitario_centavos": 238560
+          },
+          {
+            "produto_id": 4838,
+            "produto_nome": "Fone Compacta Modelo 4838",
+            "quantidade": 2,
+            "preco_unitario_centavos": 432210
+          }
+        ]
+      },
+      {
+        "id": 236871,
+        "status": "pago",
+        "criado_em": "2025-07-23T02:22:39.000Z",
+        "total_centavos": 1773750,
+        "itens": [
+          {
+            "produto_id": 3,
+            "produto_nome": "Teclado Ergonomica Modelo 3",
+            "quantidade": 2,
+            "preco_unitario_centavos": 238560
+          },
+          {
+            "produto_id": 4838,
+            "produto_nome": "Fone Compacta Modelo 4838",
+            "quantidade": 3,
+            "preco_unitario_centavos": 432210
+          }
+        ]
+      },
+      {
+        "id": 336871,
+        "status": "pago",
+        "criado_em": "2025-03-13T05:15:59.000Z",
+        "total_centavos": 1147890,
+        "itens": [
+          {
+            "produto_id": 3,
+            "produto_nome": "Teclado Ergonomica Modelo 3",
+            "quantidade": 3,
+            "preco_unitario_centavos": 238560
+          },
+          {
+            "produto_id": 4838,
+            "produto_nome": "Fone Compacta Modelo 4838",
+            "quantidade": 1,
+            "preco_unitario_centavos": 432210
+          }
+        ]
+      },
+      {
+        "id": 436871,
+        "status": "pago",
+        "criado_em": "2024-11-01T08:09:19.000Z",
+        "total_centavos": 1102980,
+        "itens": [
+          {
+            "produto_id": 3,
+            "produto_nome": "Teclado Ergonomica Modelo 3",
+            "quantidade": 1,
+            "preco_unitario_centavos": 238560
+          },
+          {
+            "produto_id": 4838,
+            "produto_nome": "Fone Compacta Modelo 4838",
+            "quantidade": 2,
+            "preco_unitario_centavos": 432210
+          }
+        ]
+      },
+      {
+        "id": 36871,
+        "status": "pago",
+        "criado_em": "2024-04-11T20:35:59.000Z",
+        "total_centavos": 1147890,
+        "itens": [
+          {
+            "produto_id": 3,
+            "produto_nome": "Teclado Ergonomica Modelo 3",
+            "quantidade": 3,
+            "preco_unitario_centavos": 238560
+          },
+          {
+            "produto_id": 4838,
+            "produto_nome": "Fone Compacta Modelo 4838",
+            "quantidade": 1,
+            "preco_unitario_centavos": 432210
+          }
+        ]
+      }
+    ]
+  },
+  "/clientes/31337/pedidos": {
+    "status": 200,
+    "corpo": [
+      {
+        "id": 129016,
+        "status": "cancelado",
+        "criado_em": "2025-11-13T14:37:44.000Z",
+        "total_centavos": 1143330,
+        "itens": [
+          {
+            "produto_id": 1680,
+            "produto_nome": "Cadeira Portatil Modelo 1680",
+            "quantidade": 3,
+            "preco_unitario_centavos": 250190
+          },
+          {
+            "produto_id": 2183,
+            "produto_nome": "Teclado Pro Modelo 2183",
+            "quantidade": 1,
+            "preco_unitario_centavos": 392760
+          }
+        ]
+      },
+      {
+        "id": 229016,
+        "status": "cancelado",
+        "criado_em": "2025-07-04T17:31:04.000Z",
+        "total_centavos": 1035710,
+        "itens": [
+          {
+            "produto_id": 1680,
+            "produto_nome": "Cadeira Portatil Modelo 1680",
+            "quantidade": 1,
+            "preco_unitario_centavos": 250190
+          },
+          {
+            "produto_id": 2183,
+            "produto_nome": "Teclado Pro Modelo 2183",
+            "quantidade": 2,
+            "preco_unitario_centavos": 392760
+          }
+        ]
+      },
+      {
+        "id": 329016,
+        "status": "cancelado",
+        "criado_em": "2025-02-22T20:24:24.000Z",
+        "total_centavos": 1678660,
+        "itens": [
+          {
+            "produto_id": 1680,
+            "produto_nome": "Cadeira Portatil Modelo 1680",
+            "quantidade": 2,
+            "preco_unitario_centavos": 250190
+          },
+          {
+            "produto_id": 2183,
+            "produto_nome": "Teclado Pro Modelo 2183",
+            "quantidade": 3,
+            "preco_unitario_centavos": 392760
+          }
+        ]
+      },
+      {
+        "id": 429016,
+        "status": "cancelado",
+        "criado_em": "2024-10-13T23:17:44.000Z",
+        "total_centavos": 1143330,
+        "itens": [
+          {
+            "produto_id": 1680,
+            "produto_nome": "Cadeira Portatil Modelo 1680",
+            "quantidade": 3,
+            "preco_unitario_centavos": 250190
+          },
+          {
+            "produto_id": 2183,
+            "produto_nome": "Teclado Pro Modelo 2183",
+            "quantidade": 1,
+            "preco_unitario_centavos": 392760
+          }
+        ]
+      },
+      {
+        "id": 29016,
+        "status": "cancelado",
+        "criado_em": "2024-03-24T11:44:24.000Z",
+        "total_centavos": 1678660,
+        "itens": [
+          {
+            "produto_id": 1680,
+            "produto_nome": "Cadeira Portatil Modelo 1680",
+            "quantidade": 2,
+            "preco_unitario_centavos": 250190
+          },
+          {
+            "produto_id": 2183,
+            "produto_nome": "Teclado Pro Modelo 2183",
+            "quantidade": 3,
+            "preco_unitario_centavos": 392760
+          }
+        ]
+      }
+    ]
+  },
+  "/clientes/99999/pedidos": {
+    "status": 200,
+    "corpo": [
+      {
+        "id": 156738,
+        "status": "pago",
+        "criado_em": "2025-10-21T14:06:42.000Z",
+        "total_centavos": 1317550,
+        "itens": [
+          {
+            "produto_id": 8122,
+            "produto_nome": "Luminaria Dobravel Modelo 8122",
+            "quantidade": 2,
+            "preco_unitario_centavos": 302170
+          },
+          {
+            "produto_id": 81,
+            "produto_nome": "Mesa Portatil Modelo 81",
+            "quantidade": 3,
+            "preco_unitario_centavos": 45380
+          },
+          {
+            "produto_id": 9128,
+            "produto_nome": "Garrafa Dobravel Modelo 9128",
+            "quantidade": 1,
+            "preco_unitario_centavos": 97310
+          },
+          {
+            "produto_id": 9631,
+            "produto_nome": "Webcam Compacta Modelo 9631",
+            "quantidade": 2,
+            "preco_unitario_centavos": 239880
+          }
+        ]
+      },
+      {
+        "id": 256738,
+        "status": "pago",
+        "criado_em": "2025-06-11T17:00:02.000Z",
+        "total_centavos": 1866150,
+        "itens": [
+          {
+            "produto_id": 8122,
+            "produto_nome": "Luminaria Dobravel Modelo 8122",
+            "quantidade": 3,
+            "preco_unitario_centavos": 302170
+          },
+          {
+            "produto_id": 81,
+            "produto_nome": "Mesa Portatil Modelo 81",
+            "quantidade": 1,
+            "preco_unitario_centavos": 45380
+          },
+          {
+            "produto_id": 9128,
+            "produto_nome": "Garrafa Dobravel Modelo 9128",
+            "quantidade": 2,
+            "preco_unitario_centavos": 97310
+          },
+          {
+            "produto_id": 9631,
+            "produto_nome": "Webcam Compacta Modelo 9631",
+            "quantidade": 3,
+            "preco_unitario_centavos": 239880
+          }
+        ]
+      },
+      {
+        "id": 356738,
+        "status": "pago",
+        "criado_em": "2025-01-30T19:53:22.000Z",
+        "total_centavos": 924740,
+        "itens": [
+          {
+            "produto_id": 8122,
+            "produto_nome": "Luminaria Dobravel Modelo 8122",
+            "quantidade": 1,
+            "preco_unitario_centavos": 302170
+          },
+          {
+            "produto_id": 81,
+            "produto_nome": "Mesa Portatil Modelo 81",
+            "quantidade": 2,
+            "preco_unitario_centavos": 45380
+          },
+          {
+            "produto_id": 9128,
+            "produto_nome": "Garrafa Dobravel Modelo 9128",
+            "quantidade": 3,
+            "preco_unitario_centavos": 97310
+          },
+          {
+            "produto_id": 9631,
+            "produto_nome": "Webcam Compacta Modelo 9631",
+            "quantidade": 1,
+            "preco_unitario_centavos": 239880
+          }
+        ]
+      },
+      {
+        "id": 456738,
+        "status": "pago",
+        "criado_em": "2024-09-20T22:46:42.000Z",
+        "total_centavos": 1317550,
+        "itens": [
+          {
+            "produto_id": 8122,
+            "produto_nome": "Luminaria Dobravel Modelo 8122",
+            "quantidade": 2,
+            "preco_unitario_centavos": 302170
+          },
+          {
+            "produto_id": 81,
+            "produto_nome": "Mesa Portatil Modelo 81",
+            "quantidade": 3,
+            "preco_unitario_centavos": 45380
+          },
+          {
+            "produto_id": 9128,
+            "produto_nome": "Garrafa Dobravel Modelo 9128",
+            "quantidade": 1,
+            "preco_unitario_centavos": 97310
+          },
+          {
+            "produto_id": 9631,
+            "produto_nome": "Webcam Compacta Modelo 9631",
+            "quantidade": 2,
+            "preco_unitario_centavos": 239880
+          }
+        ]
+      },
+      {
+        "id": 56738,
+        "status": "pago",
+        "criado_em": "2024-03-01T11:13:22.000Z",
+        "total_centavos": 924740,
+        "itens": [
+          {
+            "produto_id": 8122,
+            "produto_nome": "Luminaria Dobravel Modelo 8122",
+            "quantidade": 1,
+            "preco_unitario_centavos": 302170
+          },
+          {
+            "produto_id": 81,
+            "produto_nome": "Mesa Portatil Modelo 81",
+            "quantidade": 2,
+            "preco_unitario_centavos": 45380
+          },
+          {
+            "produto_id": 9128,
+            "produto_nome": "Garrafa Dobravel Modelo 9128",
+            "quantidade": 3,
+            "preco_unitario_centavos": 97310
+          },
+          {
+            "produto_id": 9631,
+            "produto_nome": "Webcam Compacta Modelo 9631",
+            "quantidade": 1,
+            "preco_unitario_centavos": 239880
+          }
+        ]
+      }
+    ]
+  },
+  "/clientes/100001/pedidos": {
+    "status": 404,
+    "corpo": {
+      "erro": "cliente nao encontrado"
+    }
+  },
+  "/pedidos?status=pago": {
+    "status": 200,
+    "corpo": {
+      "pagina": 1,
+      "tamanho_pagina": 20,
+      "total": 300000,
+      "pedidos": [
+        {
+          "id": 74177,
+          "cliente_id": 97968,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:57:13.000Z"
+        },
+        {
+          "id": 472803,
+          "cliente_id": 73614,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:56:27.000Z"
+        },
+        {
+          "id": 222531,
+          "cliente_id": 93902,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:51:39.000Z"
+        },
+        {
+          "id": 370885,
+          "cliente_id": 89836,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:46:05.000Z"
+        },
+        {
+          "id": 46436,
+          "cliente_id": 12157,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:44:04.000Z"
+        },
+        {
+          "id": 194790,
+          "cliente_id": 8091,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:38:30.000Z"
+        },
+        {
+          "id": 343144,
+          "cliente_id": 4025,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:32:56.000Z"
+        },
+        {
+          "id": 18695,
+          "cliente_id": 26346,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:30:55.000Z"
+        },
+        {
+          "id": 491498,
+          "cliente_id": 99959,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:27:22.000Z"
+        },
+        {
+          "id": 167049,
+          "cliente_id": 22280,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:25:21.000Z"
+        },
+        {
+          "id": 315403,
+          "cliente_id": 18214,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:19:47.000Z"
+        },
+        {
+          "id": 65131,
+          "cliente_id": 38502,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:14:59.000Z"
+        },
+        {
+          "id": 463757,
+          "cliente_id": 14148,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:14:13.000Z"
+        },
+        {
+          "id": 213485,
+          "cliente_id": 34436,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:09:25.000Z"
+        },
+        {
+          "id": 361839,
+          "cliente_id": 30370,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:03:51.000Z"
+        },
+        {
+          "id": 37390,
+          "cliente_id": 52691,
+          "status": "pago",
+          "criado_em": "2025-12-31T23:01:50.000Z"
+        },
+        {
+          "id": 185744,
+          "cliente_id": 48625,
+          "status": "pago",
+          "criado_em": "2025-12-31T22:56:16.000Z"
+        },
+        {
+          "id": 334098,
+          "cliente_id": 44559,
+          "status": "pago",
+          "criado_em": "2025-12-31T22:50:42.000Z"
+        },
+        {
+          "id": 9649,
+          "cliente_id": 66880,
+          "status": "pago",
+          "criado_em": "2025-12-31T22:48:41.000Z"
+        },
+        {
+          "id": 482452,
+          "cliente_id": 40493,
+          "status": "pago",
+          "criado_em": "2025-12-31T22:45:08.000Z"
+        }
+      ]
+    }
+  },
+  "/pedidos?status=entregue&pagina=3": {
+    "status": 200,
+    "corpo": {
+      "pagina": 3,
+      "tamanho_pagina": 20,
+      "total": 125000,
+      "pedidos": [
+        {
+          "id": 48245,
+          "cliente_id": 34396,
+          "status": "entregue",
+          "criado_em": "2025-12-31T18:03:25.000Z"
+        },
+        {
+          "id": 196599,
+          "cliente_id": 30330,
+          "status": "entregue",
+          "criado_em": "2025-12-31T17:57:51.000Z"
+        },
+        {
+          "id": 344953,
+          "cliente_id": 26264,
+          "status": "entregue",
+          "criado_em": "2025-12-31T17:52:17.000Z"
+        },
+        {
+          "id": 66940,
+          "cliente_id": 60741,
+          "status": "entregue",
+          "criado_em": "2025-12-31T17:34:20.000Z"
+        },
+        {
+          "id": 215294,
+          "cliente_id": 56675,
+          "status": "entregue",
+          "criado_em": "2025-12-31T17:28:46.000Z"
+        },
+        {
+          "id": 363648,
+          "cliente_id": 52609,
+          "status": "entregue",
+          "criado_em": "2025-12-31T17:23:12.000Z"
+        },
+        {
+          "id": 39199,
+          "cliente_id": 74930,
+          "status": "entregue",
+          "criado_em": "2025-12-31T17:21:11.000Z"
+        },
+        {
+          "id": 187553,
+          "cliente_id": 70864,
+          "status": "entregue",
+          "criado_em": "2025-12-31T17:15:37.000Z"
+        },
+        {
+          "id": 57894,
+          "cliente_id": 1275,
+          "status": "entregue",
+          "criado_em": "2025-12-31T16:52:06.000Z"
+        },
+        {
+          "id": 206248,
+          "cliente_id": 97209,
+          "status": "entregue",
+          "criado_em": "2025-12-31T16:46:32.000Z"
+        },
+        {
+          "id": 354602,
+          "cliente_id": 93143,
+          "status": "entregue",
+          "criado_em": "2025-12-31T16:40:58.000Z"
+        },
+        {
+          "id": 30153,
+          "cliente_id": 15464,
+          "status": "entregue",
+          "criado_em": "2025-12-31T16:38:57.000Z"
+        },
+        {
+          "id": 48848,
+          "cliente_id": 41809,
+          "status": "entregue",
+          "criado_em": "2025-12-31T16:09:52.000Z"
+        },
+        {
+          "id": 197202,
+          "cliente_id": 37743,
+          "status": "entregue",
+          "criado_em": "2025-12-31T16:04:18.000Z"
+        },
+        {
+          "id": 345556,
+          "cliente_id": 33677,
+          "status": "entregue",
+          "criado_em": "2025-12-31T15:58:44.000Z"
+        },
+        {
+          "id": 493910,
+          "cliente_id": 29611,
+          "status": "entregue",
+          "criado_em": "2025-12-31T15:53:10.000Z"
+        },
+        {
+          "id": 39802,
+          "cliente_id": 82343,
+          "status": "entregue",
+          "criado_em": "2025-12-31T15:27:38.000Z"
+        },
+        {
+          "id": 188156,
+          "cliente_id": 78277,
+          "status": "entregue",
+          "criado_em": "2025-12-31T15:22:04.000Z"
+        },
+        {
+          "id": 336510,
+          "cliente_id": 74211,
+          "status": "entregue",
+          "criado_em": "2025-12-31T15:16:30.000Z"
+        },
+        {
+          "id": 484864,
+          "cliente_id": 70145,
+          "status": "entregue",
+          "criado_em": "2025-12-31T15:10:56.000Z"
+        }
+      ]
+    }
+  },
+  "/pedidos?status=cancelado&pagina=250": {
+    "status": 200,
+    "corpo": {
+      "pagina": 250,
+      "tamanho_pagina": 20,
+      "total": 50000,
+      "pedidos": [
+        {
+          "id": 463697,
+          "cliente_id": 17888,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T05:45:13.000Z"
+        },
+        {
+          "id": 9589,
+          "cliente_id": 70620,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T05:19:41.000Z"
+        },
+        {
+          "id": 157943,
+          "cliente_id": 66554,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T05:14:07.000Z"
+        },
+        {
+          "id": 306297,
+          "cliente_id": 62488,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T05:08:33.000Z"
+        },
+        {
+          "id": 454651,
+          "cliente_id": 58422,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T05:02:59.000Z"
+        },
+        {
+          "id": 543,
+          "cliente_id": 11154,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T04:37:27.000Z"
+        },
+        {
+          "id": 148897,
+          "cliente_id": 7088,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T04:31:53.000Z"
+        },
+        {
+          "id": 297251,
+          "cliente_id": 3022,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T04:26:19.000Z"
+        },
+        {
+          "id": 445605,
+          "cliente_id": 98956,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T04:20:45.000Z"
+        },
+        {
+          "id": 139851,
+          "cliente_id": 47622,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T03:49:39.000Z"
+        },
+        {
+          "id": 288205,
+          "cliente_id": 43556,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T03:44:05.000Z"
+        },
+        {
+          "id": 130805,
+          "cliente_id": 88156,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T03:07:25.000Z"
+        },
+        {
+          "id": 437162,
+          "cliente_id": 46903,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T01:44:58.000Z"
+        },
+        {
+          "id": 279762,
+          "cliente_id": 91503,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T01:08:18.000Z"
+        },
+        {
+          "id": 428116,
+          "cliente_id": 87437,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T01:02:44.000Z"
+        },
+        {
+          "id": 122362,
+          "cliente_id": 36103,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T00:31:38.000Z"
+        },
+        {
+          "id": 270716,
+          "cliente_id": 32037,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T00:26:04.000Z"
+        },
+        {
+          "id": 419070,
+          "cliente_id": 27971,
+          "status": "cancelado",
+          "criado_em": "2025-10-20T00:20:30.000Z"
+        },
+        {
+          "id": 113316,
+          "cliente_id": 76637,
+          "status": "cancelado",
+          "criado_em": "2025-10-19T23:49:24.000Z"
+        },
+        {
+          "id": 261670,
+          "cliente_id": 72571,
+          "status": "cancelado",
+          "criado_em": "2025-10-19T23:43:50.000Z"
+        }
+      ]
+    }
+  },
+  "/pedidos?status=pendente&pagina=1": {
+    "status": 200,
+    "corpo": {
+      "pagina": 1,
+      "tamanho_pagina": 20,
+      "total": 25000,
+      "pedidos": [
+        {
+          "id": 148354,
+          "cliente_id": 95935,
+          "status": "pendente",
+          "criado_em": "2025-12-31T23:54:26.000Z"
+        },
+        {
+          "id": 296708,
+          "cliente_id": 91869,
+          "status": "pendente",
+          "criado_em": "2025-12-31T23:48:52.000Z"
+        },
+        {
+          "id": 139308,
+          "cliente_id": 36469,
+          "status": "pendente",
+          "criado_em": "2025-12-31T23:12:12.000Z"
+        },
+        {
+          "id": 418527,
+          "cliente_id": 16818,
+          "status": "pendente",
+          "criado_em": "2025-12-31T19:43:03.000Z"
+        },
+        {
+          "id": 261127,
+          "cliente_id": 61418,
+          "status": "pendente",
+          "criado_em": "2025-12-31T19:06:23.000Z"
+        },
+        {
+          "id": 409481,
+          "cliente_id": 57352,
+          "status": "pendente",
+          "criado_em": "2025-12-31T19:00:49.000Z"
+        },
+        {
+          "id": 103727,
+          "cliente_id": 6018,
+          "status": "pendente",
+          "criado_em": "2025-12-31T18:29:43.000Z"
+        },
+        {
+          "id": 252081,
+          "cliente_id": 1952,
+          "status": "pendente",
+          "criado_em": "2025-12-31T18:24:09.000Z"
+        },
+        {
+          "id": 400435,
+          "cliente_id": 97886,
+          "status": "pendente",
+          "criado_em": "2025-12-31T18:18:35.000Z"
+        },
+        {
+          "id": 94681,
+          "cliente_id": 46552,
+          "status": "pendente",
+          "criado_em": "2025-12-31T17:47:29.000Z"
+        },
+        {
+          "id": 243035,
+          "cliente_id": 42486,
+          "status": "pendente",
+          "criado_em": "2025-12-31T17:41:55.000Z"
+        },
+        {
+          "id": 85635,
+          "cliente_id": 87086,
+          "status": "pendente",
+          "criado_em": "2025-12-31T17:05:15.000Z"
+        },
+        {
+          "id": 364854,
+          "cliente_id": 67435,
+          "status": "pendente",
+          "criado_em": "2025-12-31T13:36:06.000Z"
+        },
+        {
+          "id": 207454,
+          "cliente_id": 12035,
+          "status": "pendente",
+          "criado_em": "2025-12-31T12:59:26.000Z"
+        },
+        {
+          "id": 355808,
+          "cliente_id": 7969,
+          "status": "pendente",
+          "criado_em": "2025-12-31T12:53:52.000Z"
+        },
+        {
+          "id": 50054,
+          "cliente_id": 56635,
+          "status": "pendente",
+          "criado_em": "2025-12-31T12:22:46.000Z"
+        },
+        {
+          "id": 198408,
+          "cliente_id": 52569,
+          "status": "pendente",
+          "criado_em": "2025-12-31T12:17:12.000Z"
+        },
+        {
+          "id": 41008,
+          "cliente_id": 97169,
+          "status": "pendente",
+          "criado_em": "2025-12-31T11:40:32.000Z"
+        },
+        {
+          "id": 477627,
+          "cliente_id": 32918,
+          "status": "pendente",
+          "criado_em": "2025-12-31T08:48:03.000Z"
+        },
+        {
+          "id": 320227,
+          "cliente_id": 77518,
+          "status": "pendente",
+          "criado_em": "2025-12-31T08:11:23.000Z"
+        }
+      ]
+    }
+  },
+  "/pedidos?status=pago&pagina=15000": {
+    "status": 200,
+    "corpo": {
+      "pagina": 15000,
+      "tamanho_pagina": 20,
+      "total": 300000,
+      "pedidos": [
+        {
+          "id": 314800,
+          "cliente_id": 10801,
+          "status": "pago",
+          "criado_em": "2024-01-01T01:13:20.000Z"
+        },
+        {
+          "id": 388977,
+          "cliente_id": 8768,
+          "status": "pago",
+          "criado_em": "2024-01-01T01:10:33.000Z"
+        },
+        {
+          "id": 64528,
+          "cliente_id": 31089,
+          "status": "pago",
+          "criado_em": "2024-01-01T01:08:32.000Z"
+        },
+        {
+          "id": 212882,
+          "cliente_id": 27023,
+          "status": "pago",
+          "criado_em": "2024-01-01T01:02:58.000Z"
+        },
+        {
+          "id": 361236,
+          "cliente_id": 22957,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:57:24.000Z"
+        },
+        {
+          "id": 36787,
+          "cliente_id": 45278,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:55:23.000Z"
+        },
+        {
+          "id": 185141,
+          "cliente_id": 41212,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:49:49.000Z"
+        },
+        {
+          "id": 333495,
+          "cliente_id": 37146,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:44:15.000Z"
+        },
+        {
+          "id": 9046,
+          "cliente_id": 59467,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:42:14.000Z"
+        },
+        {
+          "id": 83223,
+          "cliente_id": 57434,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:39:27.000Z"
+        },
+        {
+          "id": 481849,
+          "cliente_id": 33080,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:38:41.000Z"
+        },
+        {
+          "id": 157400,
+          "cliente_id": 55401,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:36:40.000Z"
+        },
+        {
+          "id": 231577,
+          "cliente_id": 53368,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:33:53.000Z"
+        },
+        {
+          "id": 379931,
+          "cliente_id": 49302,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:28:19.000Z"
+        },
+        {
+          "id": 55482,
+          "cliente_id": 71623,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:26:18.000Z"
+        },
+        {
+          "id": 203836,
+          "cliente_id": 67557,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:20:44.000Z"
+        },
+        {
+          "id": 352190,
+          "cliente_id": 63491,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:15:10.000Z"
+        },
+        {
+          "id": 27741,
+          "cliente_id": 85812,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:13:09.000Z"
+        },
+        {
+          "id": 176095,
+          "cliente_id": 81746,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:07:35.000Z"
+        },
+        {
+          "id": 324449,
+          "cliente_id": 77680,
+          "status": "pago",
+          "criado_em": "2024-01-01T00:02:01.000Z"
+        }
+      ]
+    }
+  },
+  "/pedidos?status=perdido": {
+    "status": 400,
+    "corpo": {
+      "erro": "status deve ser um de: pago, entregue, cancelado, pendente"
+    }
+  },
+  "/pedidos?status=pago&pagina=0": {
+    "status": 400,
+    "corpo": {
+      "erro": "pagina invalida"
+    }
+  },
+  "/produtos/busca?q=cadeira": {
+    "status": 200,
+    "corpo": [
+      {
+        "id": 10060,
+        "nome": "Cadeira Basica Modelo 10060",
+        "categoria": "Moveis",
+        "preco_centavos": 402390
+      },
+      {
+        "id": 10260,
+        "nome": "Cadeira Basica Modelo 10260",
+        "categoria": "Moveis",
+        "preco_centavos": 70390
+      },
+      {
+        "id": 10460,
+        "nome": "Cadeira Basica Modelo 10460",
+        "categoria": "Moveis",
+        "preco_centavos": 228390
+      },
+      {
+        "id": 1060,
+        "nome": "Cadeira Basica Modelo 1060",
+        "categoria": "Moveis",
+        "preco_centavos": 152390
+      },
+      {
+        "id": 10660,
+        "nome": "Cadeira Basica Modelo 10660",
+        "categoria": "Moveis",
+        "preco_centavos": 386390
+      },
+      {
+        "id": 10860,
+        "nome": "Cadeira Basica Modelo 10860",
+        "categoria": "Moveis",
+        "preco_centavos": 54390
+      },
+      {
+        "id": 11060,
+        "nome": "Cadeira Basica Modelo 11060",
+        "categoria": "Moveis",
+        "preco_centavos": 212390
+      },
+      {
+        "id": 11260,
+        "nome": "Cadeira Basica Modelo 11260",
+        "categoria": "Moveis",
+        "preco_centavos": 370390
+      },
+      {
+        "id": 11460,
+        "nome": "Cadeira Basica Modelo 11460",
+        "categoria": "Moveis",
+        "preco_centavos": 38390
+      },
+      {
+        "id": 11660,
+        "nome": "Cadeira Basica Modelo 11660",
+        "categoria": "Moveis",
+        "preco_centavos": 196390
+      },
+      {
+        "id": 11860,
+        "nome": "Cadeira Basica Modelo 11860",
+        "categoria": "Moveis",
+        "preco_centavos": 354390
+      },
+      {
+        "id": 12060,
+        "nome": "Cadeira Basica Modelo 12060",
+        "categoria": "Moveis",
+        "preco_centavos": 22390
+      },
+      {
+        "id": 12260,
+        "nome": "Cadeira Basica Modelo 12260",
+        "categoria": "Moveis",
+        "preco_centavos": 180390
+      },
+      {
+        "id": 12460,
+        "nome": "Cadeira Basica Modelo 12460",
+        "categoria": "Moveis",
+        "preco_centavos": 338390
+      },
+      {
+        "id": 1260,
+        "nome": "Cadeira Basica Modelo 1260",
+        "categoria": "Moveis",
+        "preco_centavos": 310390
+      },
+      {
+        "id": 12660,
+        "nome": "Cadeira Basica Modelo 12660",
+        "categoria": "Moveis",
+        "preco_centavos": 6390
+      },
+      {
+        "id": 12860,
+        "nome": "Cadeira Basica Modelo 12860",
+        "categoria": "Moveis",
+        "preco_centavos": 164390
+      },
+      {
+        "id": 13060,
+        "nome": "Cadeira Basica Modelo 13060",
+        "categoria": "Moveis",
+        "preco_centavos": 322390
+      },
+      {
+        "id": 13260,
+        "nome": "Cadeira Basica Modelo 13260",
+        "categoria": "Moveis",
+        "preco_centavos": 480390
+      },
+      {
+        "id": 13460,
+        "nome": "Cadeira Basica Modelo 13460",
+        "categoria": "Moveis",
+        "preco_centavos": 148390
+      }
+    ]
+  },
+  "/produtos/busca?q=lumin": {
+    "status": 200,
+    "corpo": [
+      {
+        "id": 10062,
+        "nome": "Luminaria Basica Modelo 10062",
+        "categoria": "Iluminacao",
+        "preco_centavos": 70770
+      },
+      {
+        "id": 10262,
+        "nome": "Luminaria Basica Modelo 10262",
+        "categoria": "Iluminacao",
+        "preco_centavos": 228770
+      },
+      {
+        "id": 10462,
+        "nome": "Luminaria Basica Modelo 10462",
+        "categoria": "Iluminacao",
+        "preco_centavos": 386770
+      },
+      {
+        "id": 1062,
+        "nome": "Luminaria Basica Modelo 1062",
+        "categoria": "Iluminacao",
+        "preco_centavos": 310770
+      },
+      {
+        "id": 10662,
+        "nome": "Luminaria Basica Modelo 10662",
+        "categoria": "Iluminacao",
+        "preco_centavos": 54770
+      },
+      {
+        "id": 10862,
+        "nome": "Luminaria Basica Modelo 10862",
+        "categoria": "Iluminacao",
+        "preco_centavos": 212770
+      },
+      {
+        "id": 11062,
+        "nome": "Luminaria Basica Modelo 11062",
+        "categoria": "Iluminacao",
+        "preco_centavos": 370770
+      },
+      {
+        "id": 11262,
+        "nome": "Luminaria Basica Modelo 11262",
+        "categoria": "Iluminacao",
+        "preco_centavos": 38770
+      },
+      {
+        "id": 11462,
+        "nome": "Luminaria Basica Modelo 11462",
+        "categoria": "Iluminacao",
+        "preco_centavos": 196770
+      },
+      {
+        "id": 11662,
+        "nome": "Luminaria Basica Modelo 11662",
+        "categoria": "Iluminacao",
+        "preco_centavos": 354770
+      },
+      {
+        "id": 11862,
+        "nome": "Luminaria Basica Modelo 11862",
+        "categoria": "Iluminacao",
+        "preco_centavos": 22770
+      },
+      {
+        "id": 12062,
+        "nome": "Luminaria Basica Modelo 12062",
+        "categoria": "Iluminacao",
+        "preco_centavos": 180770
+      },
+      {
+        "id": 12262,
+        "nome": "Luminaria Basica Modelo 12262",
+        "categoria": "Iluminacao",
+        "preco_centavos": 338770
+      },
+      {
+        "id": 12462,
+        "nome": "Luminaria Basica Modelo 12462",
+        "categoria": "Iluminacao",
+        "preco_centavos": 6770
+      },
+      {
+        "id": 1262,
+        "nome": "Luminaria Basica Modelo 1262",
+        "categoria": "Iluminacao",
+        "preco_centavos": 468770
+      },
+      {
+        "id": 12662,
+        "nome": "Luminaria Basica Modelo 12662",
+        "categoria": "Iluminacao",
+        "preco_centavos": 164770
+      },
+      {
+        "id": 12862,
+        "nome": "Luminaria Basica Modelo 12862",
+        "categoria": "Iluminacao",
+        "preco_centavos": 322770
+      },
+      {
+        "id": 13062,
+        "nome": "Luminaria Basica Modelo 13062",
+        "categoria": "Iluminacao",
+        "preco_centavos": 480770
+      },
+      {
+        "id": 13262,
+        "nome": "Luminaria Basica Modelo 13262",
+        "categoria": "Iluminacao",
+        "preco_centavos": 148770
+      },
+      {
+        "id": 13462,
+        "nome": "Luminaria Basica Modelo 13462",
+        "categoria": "Iluminacao",
+        "preco_centavos": 306770
+      }
+    ]
+  },
+  "/produtos/busca?q=ERGO": {
+    "status": 200,
+    "corpo": [
+      {
+        "id": 10019,
+        "nome": "Agenda Ergonomica Modelo 10019",
+        "categoria": "Papelaria",
+        "preco_centavos": 95600
+      },
+      {
+        "id": 1019,
+        "nome": "Agenda Ergonomica Modelo 1019",
+        "categoria": "Papelaria",
+        "preco_centavos": 335600
+      },
+      {
+        "id": 10219,
+        "nome": "Agenda Ergonomica Modelo 10219",
+        "categoria": "Papelaria",
+        "preco_centavos": 253600
+      },
+      {
+        "id": 10419,
+        "nome": "Agenda Ergonomica Modelo 10419",
+        "categoria": "Papelaria",
+        "preco_centavos": 411600
+      },
+      {
+        "id": 10619,
+        "nome": "Agenda Ergonomica Modelo 10619",
+        "categoria": "Papelaria",
+        "preco_centavos": 79600
+      },
+      {
+        "id": 10819,
+        "nome": "Agenda Ergonomica Modelo 10819",
+        "categoria": "Papelaria",
+        "preco_centavos": 237600
+      },
+      {
+        "id": 11019,
+        "nome": "Agenda Ergonomica Modelo 11019",
+        "categoria": "Papelaria",
+        "preco_centavos": 395600
+      },
+      {
+        "id": 11219,
+        "nome": "Agenda Ergonomica Modelo 11219",
+        "categoria": "Papelaria",
+        "preco_centavos": 63600
+      },
+      {
+        "id": 11419,
+        "nome": "Agenda Ergonomica Modelo 11419",
+        "categoria": "Papelaria",
+        "preco_centavos": 221600
+      },
+      {
+        "id": 11619,
+        "nome": "Agenda Ergonomica Modelo 11619",
+        "categoria": "Papelaria",
+        "preco_centavos": 379600
+      },
+      {
+        "id": 11819,
+        "nome": "Agenda Ergonomica Modelo 11819",
+        "categoria": "Papelaria",
+        "preco_centavos": 47600
+      },
+      {
+        "id": 12019,
+        "nome": "Agenda Ergonomica Modelo 12019",
+        "categoria": "Papelaria",
+        "preco_centavos": 205600
+      },
+      {
+        "id": 1219,
+        "nome": "Agenda Ergonomica Modelo 1219",
+        "categoria": "Papelaria",
+        "preco_centavos": 3600
+      },
+      {
+        "id": 12219,
+        "nome": "Agenda Ergonomica Modelo 12219",
+        "categoria": "Papelaria",
+        "preco_centavos": 363600
+      },
+      {
+        "id": 12419,
+        "nome": "Agenda Ergonomica Modelo 12419",
+        "categoria": "Papelaria",
+        "preco_centavos": 31600
+      },
+      {
+        "id": 12619,
+        "nome": "Agenda Ergonomica Modelo 12619",
+        "categoria": "Papelaria",
+        "preco_centavos": 189600
+      },
+      {
+        "id": 12819,
+        "nome": "Agenda Ergonomica Modelo 12819",
+        "categoria": "Papelaria",
+        "preco_centavos": 347600
+      },
+      {
+        "id": 13019,
+        "nome": "Agenda Ergonomica Modelo 13019",
+        "categoria": "Papelaria",
+        "preco_centavos": 15600
+      },
+      {
+        "id": 13219,
+        "nome": "Agenda Ergonomica Modelo 13219",
+        "categoria": "Papelaria",
+        "preco_centavos": 173600
+      },
+      {
+        "id": 13419,
+        "nome": "Agenda Ergonomica Modelo 13419",
+        "categoria": "Papelaria",
+        "preco_centavos": 331600
+      }
+    ]
+  },
+  "/produtos/busca?q=sem%20fio": {
+    "status": 200,
+    "corpo": [
+      {
+        "id": 10119,
+        "nome": "Agenda Sem Fio Modelo 10119",
+        "categoria": "Papelaria",
+        "preco_centavos": 174600
+      },
+      {
+        "id": 10319,
+        "nome": "Agenda Sem Fio Modelo 10319",
+        "categoria": "Papelaria",
+        "preco_centavos": 332600
+      },
+      {
+        "id": 10519,
+        "nome": "Agenda Sem Fio Modelo 10519",
+        "categoria": "Papelaria",
+        "preco_centavos": 490600
+      },
+      {
+        "id": 10719,
+        "nome": "Agenda Sem Fio Modelo 10719",
+        "categoria": "Papelaria",
+        "preco_centavos": 158600
+      },
+      {
+        "id": 10919,
+        "nome": "Agenda Sem Fio Modelo 10919",
+        "categoria": "Papelaria",
+        "preco_centavos": 316600
+      },
+      {
+        "id": 11119,
+        "nome": "Agenda Sem Fio Modelo 11119",
+        "categoria": "Papelaria",
+        "preco_centavos": 474600
+      },
+      {
+        "id": 1119,
+        "nome": "Agenda Sem Fio Modelo 1119",
+        "categoria": "Papelaria",
+        "preco_centavos": 414600
+      },
+      {
+        "id": 11319,
+        "nome": "Agenda Sem Fio Modelo 11319",
+        "categoria": "Papelaria",
+        "preco_centavos": 142600
+      },
+      {
+        "id": 11519,
+        "nome": "Agenda Sem Fio Modelo 11519",
+        "categoria": "Papelaria",
+        "preco_centavos": 300600
+      },
+      {
+        "id": 11719,
+        "nome": "Agenda Sem Fio Modelo 11719",
+        "categoria": "Papelaria",
+        "preco_centavos": 458600
+      },
+      {
+        "id": 119,
+        "nome": "Agenda Sem Fio Modelo 119",
+        "categoria": "Papelaria",
+        "preco_centavos": 114600
+      },
+      {
+        "id": 11919,
+        "nome": "Agenda Sem Fio Modelo 11919",
+        "categoria": "Papelaria",
+        "preco_centavos": 126600
+      },
+      {
+        "id": 12119,
+        "nome": "Agenda Sem Fio Modelo 12119",
+        "categoria": "Papelaria",
+        "preco_centavos": 284600
+      },
+      {
+        "id": 12319,
+        "nome": "Agenda Sem Fio Modelo 12319",
+        "categoria": "Papelaria",
+        "preco_centavos": 442600
+      },
+      {
+        "id": 12519,
+        "nome": "Agenda Sem Fio Modelo 12519",
+        "categoria": "Papelaria",
+        "preco_centavos": 110600
+      },
+      {
+        "id": 12719,
+        "nome": "Agenda Sem Fio Modelo 12719",
+        "categoria": "Papelaria",
+        "preco_centavos": 268600
+      },
+      {
+        "id": 12919,
+        "nome": "Agenda Sem Fio Modelo 12919",
+        "categoria": "Papelaria",
+        "preco_centavos": 426600
+      },
+      {
+        "id": 13119,
+        "nome": "Agenda Sem Fio Modelo 13119",
+        "categoria": "Papelaria",
+        "preco_centavos": 94600
+      },
+      {
+        "id": 1319,
+        "nome": "Agenda Sem Fio Modelo 1319",
+        "categoria": "Papelaria",
+        "preco_centavos": 82600
+      },
+      {
+        "id": 13319,
+        "nome": "Agenda Sem Fio Modelo 13319",
+        "categoria": "Papelaria",
+        "preco_centavos": 252600
+      }
+    ]
+  },
+  "/produtos/busca?q=inexistente": {
+    "status": 200,
+    "corpo": []
+  },
+  "/produtos/busca?q=ab": {
+    "status": 400,
+    "corpo": {
+      "erro": "o termo de busca precisa ter pelo menos 3 caracteres"
+    }
+  },
+  "/relatorios/vendas-por-dia?inicio=2024-01-01&fim=2024-01-07": {
+    "status": 200,
+    "corpo": [
+      {
+        "dia": "2024-01-01",
+        "pedidos": 616,
+        "itens": 3703,
+        "receita_centavos": 911023510
+      },
+      {
+        "dia": "2024-01-02",
+        "pedidos": 616,
+        "itens": 3705,
+        "receita_centavos": 910481620
+      },
+      {
+        "dia": "2024-01-03",
+        "pedidos": 615,
+        "itens": 3676,
+        "receita_centavos": 910829400
+      },
+      {
+        "dia": "2024-01-04",
+        "pedidos": 619,
+        "itens": 3713,
+        "receita_centavos": 915687730
+      },
+      {
+        "dia": "2024-01-05",
+        "pedidos": 616,
+        "itens": 3696,
+        "receita_centavos": 905480290
+      },
+      {
+        "dia": "2024-01-06",
+        "pedidos": 616,
+        "itens": 3701,
+        "receita_centavos": 915831520
+      },
+      {
+        "dia": "2024-01-07",
+        "pedidos": 615,
+        "itens": 3694,
+        "receita_centavos": 920906100
+      }
+    ]
+  },
+  "/relatorios/vendas-por-dia?inicio=2024-02-27&fim=2024-03-02": {
+    "status": 200,
+    "corpo": [
+      {
+        "dia": "2024-02-27",
+        "pedidos": 614,
+        "itens": 3683,
+        "receita_centavos": 903348170
+      },
+      {
+        "dia": "2024-02-28",
+        "pedidos": 615,
+        "itens": 3697,
+        "receita_centavos": 900357900
+      },
+      {
+        "dia": "2024-02-29",
+        "pedidos": 618,
+        "itens": 3711,
+        "receita_centavos": 915417910
+      },
+      {
+        "dia": "2024-03-01",
+        "pedidos": 615,
+        "itens": 3686,
+        "receita_centavos": 910971210
+      },
+      {
+        "dia": "2024-03-02",
+        "pedidos": 614,
+        "itens": 3678,
+        "receita_centavos": 906914440
+      }
+    ]
+  },
+  "/relatorios/vendas-por-dia?inicio=2025-12-25&fim=2025-12-31": {
+    "status": 200,
+    "corpo": [
+      {
+        "dia": "2025-12-25",
+        "pedidos": 621,
+        "itens": 3737,
+        "receita_centavos": 917448380
+      },
+      {
+        "dia": "2025-12-26",
+        "pedidos": 613,
+        "itens": 3699,
+        "receita_centavos": 921894810
+      },
+      {
+        "dia": "2025-12-27",
+        "pedidos": 613,
+        "itens": 3674,
+        "receita_centavos": 902305950
+      },
+      {
+        "dia": "2025-12-28",
+        "pedidos": 620,
+        "itens": 3702,
+        "receita_centavos": 908142460
+      },
+      {
+        "dia": "2025-12-29",
+        "pedidos": 619,
+        "itens": 3709,
+        "receita_centavos": 916844020
+      },
+      {
+        "dia": "2025-12-30",
+        "pedidos": 609,
+        "itens": 3652,
+        "receita_centavos": 896144770
+      },
+      {
+        "dia": "2025-12-31",
+        "pedidos": 619,
+        "itens": 3721,
+        "receita_centavos": 915440530
+      }
+    ]
+  },
+  "/relatorios/vendas-por-dia?inicio=2023-12-30&fim=2024-01-02": {
+    "status": 200,
+    "corpo": [
+      {
+        "dia": "2024-01-01",
+        "pedidos": 616,
+        "itens": 3703,
+        "receita_centavos": 911023510
+      },
+      {
+        "dia": "2024-01-02",
+        "pedidos": 616,
+        "itens": 3705,
+        "receita_centavos": 910481620
+      }
+    ]
+  },
+  "/relatorios/vendas-por-dia?inicio=2024-03-01&fim=2024-02-01": {
+    "status": 400,
+    "corpo": {
+      "erro": "o periodo deve ter entre 1 e 31 dias"
+    }
+  },
+  "/relatorios/vendas-por-dia?inicio=2024-01-01&fim=2024-03-01": {
+    "status": 400,
+    "corpo": {
+      "erro": "o periodo deve ter entre 1 e 31 dias"
+    }
+  },
+  "/relatorios/vendas-por-dia?inicio=2024-02-30&fim=2024-03-01": {
+    "status": 400,
+    "corpo": {
+      "erro": "informe inicio e fim no formato AAAA-MM-DD"
+    }
+  },
+  "/relatorios/top-produtos": {
+    "status": 200,
+    "corpo": [
+      {
+        "produto_id": 167,
+        "nome": "Mochila Slim Modelo 167",
+        "categoria": "Acessorios",
+        "unidades": 10052,
+        "receita_centavos": 4882457440
+      },
+      {
+        "produto_id": 43,
+        "nome": "Teclado Premium Modelo 43",
+        "categoria": "Perifericos",
+        "unidades": 10051,
+        "receita_centavos": 4685374160
+      },
+      {
+        "produto_id": 55,
+        "nome": "Estante Premium Modelo 55",
+        "categoria": "Moveis",
+        "unidades": 10051,
+        "receita_centavos": 4386658440
+      },
+      {
+        "produto_id": 123,
+        "nome": "Teclado Dobravel Modelo 123",
+        "categoria": "Perifericos",
+        "unidades": 10049,
+        "receita_centavos": 4334736640
+      },
+      {
+        "produto_id": 191,
+        "nome": "Webcam Pro Modelo 191",
+        "categoria": "Perifericos",
+        "unidades": 10102,
+        "receita_centavos": 4306280560
+      },
+      {
+        "produto_id": 129,
+        "nome": "Caderno Dobravel Modelo 129",
+        "categoria": "Papelaria",
+        "unidades": 10102,
+        "receita_centavos": 4207483000
+      },
+      {
+        "produto_id": 67,
+        "nome": "Mochila Basica Modelo 67",
+        "categoria": "Acessorios",
+        "unidades": 10051,
+        "receita_centavos": 4087942720
+      },
+      {
+        "produto_id": 147,
+        "nome": "Mochila Reforcada Modelo 147",
+        "categoria": "Acessorios",
+        "unidades": 10049,
+        "receita_centavos": 3737424080
+      },
+      {
+        "produto_id": 23,
+        "nome": "Teclado Compacta Modelo 23",
+        "categoria": "Perifericos",
+        "unidades": 10053,
+        "receita_centavos": 3542275080
+      },
+      {
+        "produto_id": 91,
+        "nome": "Webcam Portatil Modelo 91",
+        "categoria": "Perifericos",
+        "unidades": 10097,
+        "receita_centavos": 3506486160
+      }
+    ]
+  },
+  "/relatorios/top-produtos?limite=5": {
+    "status": 200,
+    "corpo": [
+      {
+        "produto_id": 167,
+        "nome": "Mochila Slim Modelo 167",
+        "categoria": "Acessorios",
+        "unidades": 10052,
+        "receita_centavos": 4882457440
+      },
+      {
+        "produto_id": 43,
+        "nome": "Teclado Premium Modelo 43",
+        "categoria": "Perifericos",
+        "unidades": 10051,
+        "receita_centavos": 4685374160
+      },
+      {
+        "produto_id": 55,
+        "nome": "Estante Premium Modelo 55",
+        "categoria": "Moveis",
+        "unidades": 10051,
+        "receita_centavos": 4386658440
+      },
+      {
+        "produto_id": 123,
+        "nome": "Teclado Dobravel Modelo 123",
+        "categoria": "Perifericos",
+        "unidades": 10049,
+        "receita_centavos": 4334736640
+      },
+      {
+        "produto_id": 191,
+        "nome": "Webcam Pro Modelo 191",
+        "categoria": "Perifericos",
+        "unidades": 10102,
+        "receita_centavos": 4306280560
+      }
+    ]
+  },
+  "/relatorios/top-produtos?limite=50": {
+    "status": 200,
+    "corpo": [
+      {
+        "produto_id": 167,
+        "nome": "Mochila Slim Modelo 167",
+        "categoria": "Acessorios",
+        "unidades": 10052,
+        "receita_centavos": 4882457440
+      },
+      {
+        "produto_id": 43,
+        "nome": "Teclado Premium Modelo 43",
+        "categoria": "Perifericos",
+        "unidades": 10051,
+        "receita_centavos": 4685374160
+      },
+      {
+        "produto_id": 55,
+        "nome": "Estante Premium Modelo 55",
+        "categoria": "Moveis",
+        "unidades": 10051,
+        "receita_centavos": 4386658440
+      },
+      {
+        "produto_id": 123,
+        "nome": "Teclado Dobravel Modelo 123",
+        "categoria": "Perifericos",
+        "unidades": 10049,
+        "receita_centavos": 4334736640
+      },
+      {
+        "produto_id": 191,
+        "nome": "Webcam Pro Modelo 191",
+        "categoria": "Perifericos",
+        "unidades": 10102,
+        "receita_centavos": 4306280560
+      },
+      {
+        "produto_id": 129,
+        "nome": "Caderno Dobravel Modelo 129",
+        "categoria": "Papelaria",
+        "unidades": 10102,
+        "receita_centavos": 4207483000
+      },
+      {
+        "produto_id": 67,
+        "nome": "Mochila Basica Modelo 67",
+        "categoria": "Acessorios",
+        "unidades": 10051,
+        "receita_centavos": 4087942720
+      },
+      {
+        "produto_id": 147,
+        "nome": "Mochila Reforcada Modelo 147",
+        "categoria": "Acessorios",
+        "unidades": 10049,
+        "receita_centavos": 3737424080
+      },
+      {
+        "produto_id": 23,
+        "nome": "Teclado Compacta Modelo 23",
+        "categoria": "Perifericos",
+        "unidades": 10053,
+        "receita_centavos": 3542275080
+      },
+      {
+        "produto_id": 91,
+        "nome": "Webcam Portatil Modelo 91",
+        "categoria": "Perifericos",
+        "unidades": 10097,
+        "receita_centavos": 3506486160
+      },
+      {
+        "produto_id": 29,
+        "nome": "Caderno Compacta Modelo 29",
+        "categoria": "Papelaria",
+        "unidades": 10098,
+        "receita_centavos": 3408075000
+      },
+      {
+        "produto_id": 103,
+        "nome": "Teclado Sem Fio Modelo 103",
+        "categoria": "Perifericos",
+        "unidades": 10051,
+        "receita_centavos": 3191795560
+      },
+      {
+        "produto_id": 171,
+        "nome": "Webcam Slim Modelo 171",
+        "categoria": "Perifericos",
+        "unidades": 10000,
+        "receita_centavos": 3124800000
+      },
+      {
+        "produto_id": 109,
+        "nome": "Caderno Sem Fio Modelo 109",
+        "categoria": "Papelaria",
+        "unidades": 10052,
+        "receita_centavos": 3042740400
+      },
+      {
+        "produto_id": 47,
+        "nome": "Mochila Premium Modelo 47",
+        "categoria": "Acessorios",
+        "unidades": 10052,
+        "receita_centavos": 2944431840
+      },
+      {
+        "produto_id": 115,
+        "nome": "Estante Sem Fio Modelo 115",
+        "categoria": "Moveis",
+        "unidades": 10049,
+        "receita_centavos": 2892504160
+      },
+      {
+        "produto_id": 189,
+        "nome": "Caderno Pro Modelo 189",
+        "categoria": "Papelaria",
+        "unidades": 10103,
+        "receita_centavos": 2706593700
+      },
+      {
+        "produto_id": 127,
+        "nome": "Mochila Dobravel Modelo 127",
+        "categoria": "Acessorios",
+        "unidades": 10051,
+        "receita_centavos": 2594364120
+      },
+      {
+        "produto_id": 195,
+        "nome": "Estante Pro Modelo 195",
+        "categoria": "Moveis",
+        "unidades": 10050,
+        "receita_centavos": 2543052000
+      },
+      {
+        "produto_id": 99,
+        "nome": "Agenda Portatil Modelo 99",
+        "categoria": "Papelaria",
+        "unidades": 5049,
+        "receita_centavos": 2478049200
+      },
+      {
+        "produto_id": 37,
+        "nome": "Relogio Compacta Modelo 37",
+        "categoria": "Acessorios",
+        "unidades": 5101,
+        "receita_centavos": 2453683020
+      },
+      {
+        "produto_id": 105,
+        "nome": "Monitor Sem Fio Modelo 105",
+        "categoria": "Perifericos",
+        "unidades": 5102,
+        "receita_centavos": 2428245880
+      },
+      {
+        "produto_id": 173,
+        "nome": "Cabo Slim Modelo 173",
+        "categoria": "Acessorios",
+        "unidades": 5099,
+        "receita_centavos": 2400915140
+      },
+      {
+        "produto_id": 3,
+        "nome": "Teclado Ergonomica Modelo 3",
+        "categoria": "Perifericos",
+        "unidades": 10049,
+        "receita_centavos": 2397289440
+      },
+      {
+        "produto_id": 111,
+        "nome": "Webcam Sem Fio Modelo 111",
+        "categoria": "Perifericos",
+        "unidades": 5100,
+        "receita_centavos": 2351508000
+      },
+      {
+        "produto_id": 71,
+        "nome": "Webcam Basica Modelo 71",
+        "categoria": "Perifericos",
+        "unidades": 10000,
+        "receita_centavos": 2334800000
+      },
+      {
+        "produto_id": 49,
+        "nome": "Caderno Premium Modelo 49",
+        "categoria": "Papelaria",
+        "unidades": 5101,
+        "receita_centavos": 2302081300
+      },
+      {
+        "produto_id": 179,
+        "nome": "Agenda Slim Modelo 179",
+        "categoria": "Papelaria",
+        "unidades": 5048,
+        "receita_centavos": 2301888000
+      },
+      {
+        "produto_id": 117,
+        "nome": "Relogio Sem Fio Modelo 117",
+        "categoria": "Acessorios",
+        "unidades": 5099,
+        "receita_centavos": 2275275780
+      },
+      {
+        "produto_id": 185,
+        "nome": "Monitor Pro Modelo 185",
+        "categoria": "Perifericos",
+        "unidades": 5100,
+        "receita_centavos": 2249814000
+      },
+      {
+        "produto_id": 9,
+        "nome": "Caderno Ergonomica Modelo 9",
+        "categoria": "Papelaria",
+        "unidades": 10051,
+        "receita_centavos": 2248408700
+      },
+      {
+        "produto_id": 61,
+        "nome": "Mesa Basica Modelo 61",
+        "categoria": "Moveis",
+        "unidades": 5048,
+        "receita_centavos": 2128135840
+      },
+      {
+        "produto_id": 15,
+        "nome": "Estante Ergonomica Modelo 15",
+        "categoria": "Moveis",
+        "unidades": 10050,
+        "receita_centavos": 2098842000
+      },
+      {
+        "produto_id": 197,
+        "nome": "Relogio Pro Modelo 197",
+        "categoria": "Acessorios",
+        "unidades": 5100,
+        "receita_centavos": 2098242000
+      },
+      {
+        "produto_id": 135,
+        "nome": "Estante Dobravel Modelo 135",
+        "categoria": "Moveis",
+        "unidades": 5052,
+        "receita_centavos": 2029085280
+      },
+      {
+        "produto_id": 5,
+        "nome": "Monitor Ergonomica Modelo 5",
+        "categoria": "Perifericos",
+        "unidades": 5099,
+        "receita_centavos": 2023997060
+      },
+      {
+        "produto_id": 151,
+        "nome": "Webcam Reforcada Modelo 151",
+        "categoria": "Perifericos",
+        "unidades": 10098,
+        "receita_centavos": 2006270640
+      },
+      {
+        "produto_id": 73,
+        "nome": "Cabo Basica Modelo 73",
+        "categoria": "Acessorios",
+        "unidades": 5100,
+        "receita_centavos": 1998486000
+      },
+      {
+        "produto_id": 141,
+        "nome": "Mesa Reforcada Modelo 141",
+        "categoria": "Moveis",
+        "unidades": 5052,
+        "receita_centavos": 1954012560
+      },
+      {
+        "produto_id": 11,
+        "nome": "Webcam Ergonomica Modelo 11",
+        "categoria": "Perifericos",
+        "unidades": 5101,
+        "receita_centavos": 1948990080
+      },
+      {
+        "produto_id": 89,
+        "nome": "Caderno Portatil Modelo 89",
+        "categoria": "Papelaria",
+        "unidades": 10099,
+        "receita_centavos": 1907701100
+      },
+      {
+        "produto_id": 79,
+        "nome": "Agenda Basica Modelo 79",
+        "categoria": "Papelaria",
+        "unidades": 5050,
+        "receita_centavos": 1903850000
+      },
+      {
+        "produto_id": 17,
+        "nome": "Relogio Ergonomica Modelo 17",
+        "categoria": "Acessorios",
+        "unidades": 5101,
+        "receita_centavos": 1873189220
+      },
+      {
+        "produto_id": 85,
+        "nome": "Monitor Portatil Modelo 85",
+        "categoria": "Perifericos",
+        "unidades": 5098,
+        "receita_centavos": 1846189720
+      },
+      {
+        "produto_id": 153,
+        "nome": "Cabo Reforcada Modelo 153",
+        "categoria": "Acessorios",
+        "unidades": 5100,
+        "receita_centavos": 1821006000
+      },
+      {
+        "produto_id": 27,
+        "nome": "Mochila Compacta Modelo 27",
+        "categoria": "Acessorios",
+        "unidades": 10051,
+        "receita_centavos": 1800335120
+      },
+      {
+        "produto_id": 95,
+        "nome": "Estante Portatil Modelo 95",
+        "categoria": "Moveis",
+        "unidades": 10051,
+        "receita_centavos": 1749276040
+      },
+      {
+        "produto_id": 159,
+        "nome": "Agenda Reforcada Modelo 159",
+        "categoria": "Papelaria",
+        "unidades": 5049,
+        "receita_centavos": 1727767800
+      },
+      {
+        "produto_id": 97,
+        "nome": "Relogio Portatil Modelo 97",
+        "categoria": "Acessorios",
+        "unidades": 5101,
+        "receita_centavos": 1695674420
+      },
+      {
+        "produto_id": 165,
+        "nome": "Monitor Slim Modelo 165",
+        "categoria": "Perifericos",
+        "unidades": 5101,
+        "receita_centavos": 1669761340
+      }
+    ]
+  },
+  "/relatorios/top-produtos?limite=0": {
+    "status": 400,
+    "corpo": {
+      "erro": "limite deve ser um inteiro entre 1 e 50"
+    }
+  },
+  "/relatorios/top-produtos?limite=51": {
+    "status": 400,
+    "corpo": {
+      "erro": "limite deve ser um inteiro entre 1 e 50"
+    }
+  }
+}
