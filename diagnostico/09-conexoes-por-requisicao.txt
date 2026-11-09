@@ -1,0 +1,11 @@
+# Conexões abertas e tempo por requisição, uma requisição por vez, sem carga — 2026-11-09T19:32:11Z commit c959835
+# 'conexoes' = diferença de pg_stat_database.sessions antes/depois, menos 1 (a sessão do próprio psql que lê o contador; calibrado sem requisição: diferença = 1)
+url                                                          status    tempo_s  conexoes
+/clientes/4242                                                  200   0.004521         1
+/clientes?email=cliente4242%40exemplo.com                       200   0.027257         1
+/clientes/4242/pedidos                                          200   0.427875        17
+/clientes/77/pedidos                                            200   0.341834        17
+/pedidos?status=pago&pagina=500                                 200   0.200920         2
+/produtos/busca?q=cadeira                                       200   0.010938         1
+/relatorios/vendas-por-dia?inicio=2024-03-01&fim=2024-03-07     200   0.107298         1
+/relatorios/top-produtos?limite=10                              200   0.574069         1

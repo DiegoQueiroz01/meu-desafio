@@ -1,0 +1,33 @@
+# Ambiente do banco — coletado em 2026-11-09T19:31:31Z, commit c959835
+                                                       version                                                       
+---------------------------------------------------------------------------------------------------------------------
+ PostgreSQL 16.4 (Debian 16.4-1.pgdg120+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14) 12.2.0, 64-bit
+(1 row)
+
+    tabela    | linhas  | tamanho_total 
+--------------+---------+---------------
+ pedidos      |  500000 | 174 MB
+ itens_pedido | 1500000 | 107 MB
+ clientes     |  100000 | 11 MB
+ produtos     |   20000 | 2016 kB
+(4 rows)
+
+  tablename   |     indexname     |                                   indexdef                                    
+--------------+-------------------+-------------------------------------------------------------------------------
+ clientes     | clientes_pkey     | CREATE UNIQUE INDEX clientes_pkey ON public.clientes USING btree (id)
+ itens_pedido | itens_pedido_pkey | CREATE UNIQUE INDEX itens_pedido_pkey ON public.itens_pedido USING btree (id)
+ pedidos      | pedidos_pkey      | CREATE UNIQUE INDEX pedidos_pkey ON public.pedidos USING btree (id)
+ produtos     | produtos_pkey     | CREATE UNIQUE INDEX produtos_pkey ON public.produtos USING btree (id)
+(4 rows)
+
+              name               | setting | unit 
+---------------------------------+---------+------
+ effective_cache_size            | 524288  | 8kB
+ jit                             | on      | 
+ max_connections                 | 100     | 
+ max_parallel_workers_per_gather | 2       | 
+ random_page_cost                | 4       | 
+ shared_buffers                  | 16384   | 8kB
+ work_mem                        | 4096    | kB
+(7 rows)
+

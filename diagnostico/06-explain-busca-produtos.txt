@@ -1,0 +1,21 @@
+# 2026-11-09T19:31:43Z commit c959835
+
+-- SELECT * FROM produtos WHERE nome ILIKE '%' || 'cadeira' || '%' ORDER BY nome, id LIMIT 20
+                                                      QUERY PLAN                                                       
+-----------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=466.88..466.93 rows=20 width=44) (actual time=6.874..6.876 rows=20 loops=1)
+   Buffers: shared hit=196
+   ->  Sort  (cost=466.88..469.40 rows=1010 width=44) (actual time=6.874..6.875 rows=20 loops=1)
+         Sort Key: nome, id
+         Sort Method: top-N heapsort  Memory: 27kB
+         Buffers: shared hit=196
+         ->  Seq Scan on produtos  (cost=0.00..440.00 rows=1010 width=44) (actual time=0.014..6.624 rows=1000 loops=1)
+               Filter: (nome ~~* '%cadeira%'::text)
+               Rows Removed by Filter: 19000
+               Buffers: shared hit=190
+ Planning:
+   Buffers: shared hit=83
+ Planning Time: 0.270 ms
+ Execution Time: 6.891 ms
+(14 rows)
+

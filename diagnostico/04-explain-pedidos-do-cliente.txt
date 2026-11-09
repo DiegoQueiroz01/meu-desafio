@@ -1,0 +1,60 @@
+# 2026-11-09T19:31:42Z commit c959835
+
+-- SELECT * FROM pedidos WHERE cliente_id = 4242 ORDER BY criado_em DESC, id DESC
+                                                         QUERY PLAN                                                          
+-----------------------------------------------------------------------------------------------------------------------------
+ Gather Merge  (cost=24438.20..24438.67 rows=4 width=299) (actual time=17.638..19.237 rows=5 loops=1)
+   Workers Planned: 2
+   Workers Launched: 2
+   Buffers: shared hit=2142 read=18818
+   ->  Sort  (cost=23438.18..23438.18 rows=2 width=299) (actual time=16.265..16.266 rows=2 loops=3)
+         Sort Key: criado_em DESC, id DESC
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=2142 read=18818
+         Worker 0:  Sort Method: quicksort  Memory: 25kB
+         Worker 1:  Sort Method: quicksort  Memory: 25kB
+         ->  Parallel Seq Scan on pedidos  (cost=0.00..23438.17 rows=2 width=299) (actual time=6.869..16.225 rows=2 loops=3)
+               Filter: (cliente_id = 4242)
+               Rows Removed by Filter: 166665
+               Buffers: shared hit=2016 read=18818
+ Planning:
+   Buffers: shared hit=84
+ Planning Time: 0.172 ms
+ Execution Time: 19.281 ms
+(18 rows)
+
+
+-- SELECT * FROM itens_pedido WHERE pedido_id = 4242 ORDER BY id
+                                                            QUERY PLAN                                                            
+----------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=18367.94..18367.95 rows=4 width=20) (actual time=42.961..44.663 rows=3 loops=1)
+   Sort Key: id
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=2595 read=6963
+   ->  Gather  (cost=1000.00..18367.90 rows=4 width=20) (actual time=0.873..44.646 rows=3 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         Buffers: shared hit=2592 read=6963
+         ->  Parallel Seq Scan on itens_pedido  (cost=0.00..17367.50 rows=2 width=20) (actual time=20.288..27.095 rows=1 loops=3)
+               Filter: (pedido_id = 4242)
+               Rows Removed by Filter: 499999
+               Buffers: shared hit=2592 read=6963
+ Planning:
+   Buffers: shared hit=73
+ Planning Time: 0.176 ms
+ Execution Time: 44.699 ms
+(16 rows)
+
+
+-- SELECT * FROM produtos WHERE id = 4242
+                                                       QUERY PLAN                                                        
+-------------------------------------------------------------------------------------------------------------------------
+ Index Scan using produtos_pkey on produtos  (cost=0.29..8.30 rows=1 width=44) (actual time=0.025..0.025 rows=1 loops=1)
+   Index Cond: (id = 4242)
+   Buffers: shared hit=2 read=1
+ Planning:
+   Buffers: shared hit=70
+ Planning Time: 0.183 ms
+ Execution Time: 0.048 ms
+(7 rows)
+
