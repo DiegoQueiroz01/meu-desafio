@@ -9,6 +9,7 @@ Coletado em 2026-11-09 sobre o commit `c959835` (aplicação sem mudanças). Cad
 | [01-banco-ambiente.txt](01-banco-ambiente.txt) | Versão, tamanho das tabelas, índices existentes e parâmetros do PostgreSQL |
 | [02 a 08-explain-*.txt](.) | `EXPLAIN (ANALYZE, BUFFERS)` da consulta de cada rota, com parâmetros no formato que o teste de carga usa |
 | [09-conexoes-por-requisicao.txt](09-conexoes-por-requisicao.txt) | Tempo de cada rota sem carga e quantas conexões ao banco cada requisição abre |
+| [10-explain-com-indices.txt](10-explain-com-indices.txt) | Mesmas consultas de 02 a 08 com `banco/03-indices.sql` aplicado, e o tamanho de cada índice (hipótese 01) |
 
 ## O que as evidências mostram
 
