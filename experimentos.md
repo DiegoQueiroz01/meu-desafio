@@ -8,7 +8,7 @@ Cada ideia testada vira uma linha na tabela e uma seção abaixo. Os números de
 | 02 | Pool de conexões (`pg.Pool`) na API | [node-postgres, Pooling](https://node-postgres.com/features/pooling) | aplicada e medida | 4.78 req/s, p95 14401.8 ms | 5.51 req/s, p95 13922.4 ms | `resultados/20261111-1308*`, `-1309*`, `-1311*` `-02-pool-conexoes` | Confirmada com ganho pequeno: o banco segue preso em `Seq Scan`; rotas rápidas pioraram na mediana (fila de 10 conexões) |
 | 01+02 | Índices (01) e pool de conexões (02) juntos | as fontes de 01 e 02 | aplicada e medida | só 01: 19.73 req/s, p95 4102.9 ms | 36.47 req/s, p95 2467.9 ms | `resultados/20261111-1459*`, `-1500*`, `-1502*` `-01-02-indices-pool` | Confirmada: com os índices, o custo de abrir conexões passou a pesar; o pool, que sozinho rendeu pouco, aumentou bastante a vazão sobre os índices |
 | 03 | `top-produtos` pré-calculado numa visão materializada | [PostgreSQL 16, Materialized Views](https://www.postgresql.org/docs/16/rules-materializedviews.html) | aplicada e medida | 4.78 req/s, p95 14401.8 ms | 5.05 req/s, p95 14096.8 ms | `resultados/20261111-1556*`, `-1557*`, `-1559*` `-03-top-produtos` | Confirmada com ganho geral pequeno: a rota caiu de 9902.8 para 251.9 ms de mediana, mas as outras seguem presas em `Seq Scan` |
-| 01+02+03 | Índices, pool e `top-produtos` pré-calculado juntos | as fontes de 01, 02 e 03 | em medição | | | | |
+| 01+02+03 | Índices, pool e `top-produtos` pré-calculado juntos | as fontes de 01, 02 e 03 | aplicada e medida | 01+02: 36.47 req/s, p95 2467.9 ms | 98.09 req/s, p95 788.6 ms | `resultados/20261111-1620*`, `-1622*`, `-1623*` `-01-02-03-indices-pool-top` | Confirmada: todas as rotas melhoraram; o banco saiu do limite (84.9% de CPU) e a API chegou perto do seu (46.7% de 50%) |
 
 ---
 
@@ -394,4 +394,44 @@ Com índices e pool, a consulta de `top-produtos` ficou com 61.2% do tempo do ba
 
 ### Resultado
 
-Ainda não medido.
+Medido em 2026-11-11 no commit `e5ba40e`, banco recriado do zero, contrato mantido nas 3 execuções. Cada valor é a mediana (o valor do meio) das 3 execuções, tirado dos `resumo.txt` e `recursos.txt` das pastas:
+
+- Antes (01+02): `resultados/20261111-145918-01-02-indices-pool`, `20261111-150047-01-02-indices-pool`, `20261111-150210-01-02-indices-pool`
+- Depois (01+02+03): `resultados/20261111-162052-01-02-03-indices-pool-top`, `20261111-162210-01-02-03-indices-pool-top`, `20261111-162329-01-02-03-indices-pool-top`
+
+**Geral**
+
+| Métrica | 01+02 | 01+02+03 |
+|---|---|---|
+| Requisições em 60 s | 2274 | 5925 |
+| Requisições/s | 36.47 | 98.09 |
+| Tempo de resposta, mediana | 129.8 ms | 105.7 ms |
+| Tempo de resposta, p95 | 2467.9 ms | 788.6 ms |
+| Tempo de resposta, p99 | 4696.5 ms | 1134.0 ms |
+| Erros | 0.00% | 0.00% |
+| CPU média do banco | 98.4% | 84.9% |
+| Memória máxima do banco (limite 512 MiB) | 378.5 MiB | 240.0 MiB |
+| CPU média da API (limite 50%) | 21.8% | 46.7% |
+| Memória máxima da API (limite 256 MiB) | 55.4 MiB | 45.0 MiB |
+
+**Por rota** (mediana / p95, em ms)
+
+| Rota | 01+02 | 01+02+03 |
+|---|---|---|
+| `cliente` | 44.1 / 228.3 | 12.5 / 190.3 |
+| `cliente-por-email` | 40.5 / 203.7 | 13.4 / 189.3 |
+| `pedidos-do-cliente` | 882.7 / 2706.3 | 532.7 / 1106.2 |
+| `pedidos-por-status` | 302.2 / 4432.9 | 190.0 / 459.4 |
+| `busca-produtos` | 94.6 / 261.8 | 97.9 / 213.1 |
+| `vendas-por-dia` | 594.4 / 2053.5 | 204.0 / 408.8 |
+| `top-produtos` | 3153.1 / 5361.1 | 14.1 / 181.7 |
+
+### Conclusão
+
+A hipótese foi **confirmada**: contra a integração 01+02, a mediana de requisições/s subiu (36.47 → 98.09) e a de p95 geral caiu (2467.9 → 788.6 ms), com o contrato mantido. Nas 3 execuções de cada lado, os valores não se sobrepõem: requisições/s de 36.37 a 37.22 antes e de 93.89 a 99.39 depois; p95 de 2309.1 a 2525.9 ms antes e de 782.6 a 800.0 ms depois.
+
+- **De novo, um gargalo escondia o outro.** Sozinha, sobre a aplicação original, a hipótese 03 levou as requisições/s de 4.78 para 5.05 (seção 03). Sobre índices e pool, levou de 36.47 para 98.09, como o diagnóstico 12 indicava.
+- **Todas as rotas melhoraram, não só `top-produtos`.** A CPU que a soma ocupava passou a atender as outras rotas. O p95 de `pedidos-por-status` caiu de 4432.9 para 459.4 ms, e o de `vendas-por-dia`, de 2053.5 para 408.8 ms. A exceção é a mediana de `busca-produtos` (94.6 → 97.9 ms), que ficou parecida.
+- **O gargalo mudou de lugar.** Pela primeira vez, o banco não ficou no limite: CPU média de 84.9% (de 82.7% a 85.1% nas 3 execuções). Já a API ficou com 46.7% de CPU média, perto do seu limite de 0,5 CPU (50%), com máximas de 52.3% a 55.7% nas amostras. A próxima melhoria provavelmente está na API, não no banco. Isso ainda precisa de diagnóstico.
+- **Custo:** nenhum serviço novo e nenhum limite alterado. A API passou a usar quase toda a CPU que tem, porque atende 98.09 requisições/s. A memória máxima do banco caiu de 378.5 para 240.0 MiB. Continua valendo o custo da visão: dados defasados até o próximo refresh (seção 03).
+- **Limites:** a carga só faz leituras, então o refresh da visão não foi medido sob carga. Numa loja real, cada refresh custaria cerca de 0,7 s de banco (arquivo 13).
