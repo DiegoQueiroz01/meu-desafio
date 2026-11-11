@@ -1,0 +1,64 @@
+# Tempo de banco gasto por consulta durante uma rodada de carga — início 2026-11-11T18:41:38Z, código do commit ae5b434 (branch integracao: índices 01 + pool 02)
+#
+# Método:
+#   1. pg_stat_statements ligado só para este diagnóstico, por ALTER SYSTEM SET shared_preload_libraries = 'pg_stat_statements'
+#      + restart do banco + CREATE EXTENSION (fica no volume do banco; nenhum arquivo do repositório mudou).
+#   2. Aquecimento igual ao do scripts/medir.sh (VUS=5, 15s, SEMENTE=43), depois pg_stat_statements_reset().
+#   3. Uma rodada da carga com os parâmetros das medições (VUS=20, DURACAO=60s, SEMENTE=42), chamando o k6 direto
+#      (docker compose run carga), sem o medir.sh: não gera pasta em resultados/ e NÃO é resultado de experimento.
+#   4. Consulta abaixo em pg_stat_statements.
+#
+# Como ler:
+#   - total_s/pct = tempo decorrido dentro do banco (total_exec_time), não CPU pura. Com até 10 consultas ao mesmo tempo
+#     disputando 1 CPU, esse tempo inclui a espera pela CPU. Como o banco ficou em ~100% de CPU, a proporção é um indicativo
+#     de onde a CPU vai, não uma medida exata.
+#   - top-produtos usa processos paralelos (Workers Launched: 2 no diagnostico/08 e 10); o tempo dos workers não entra no
+#     total_exec_time do processo principal, então o consumo real de CPU dessa consulta tende a ser maior que o mostrado.
+#   - blocos_lidos = shared_blks_hit + shared_blks_read (páginas de 8 kB lidas do cache ou do disco).
+#
+# Consulta -> rota:
+#   SELECT pr.id, pr.nome ... sum(...)              -> /relatorios/top-produtos
+#   SELECT p.id AS pedido_id, p.criado_em, ...      -> /relatorios/vendas-por-dia
+#   SELECT * FROM pedidos WHERE status ... OFFSET   -> /pedidos?status= (página)
+#   SELECT count(*) ... WHERE status                -> /pedidos?status= (total)
+#   SELECT * FROM produtos WHERE nome ILIKE         -> /produtos/busca
+#   SELECT * FROM clientes WHERE id                 -> /clientes/:id e /clientes/:id/pedidos
+#   SELECT * FROM pedidos WHERE cliente_id          -> /clientes/:id/pedidos
+#   SELECT * FROM clientes WHERE lower(email)       -> /clientes?email=
+#   SELECT * FROM produtos WHERE id                 -> /clientes/:id/pedidos (N+1, uma por item)
+#   SELECT * FROM itens_pedido WHERE pedido_id      -> /clientes/:id/pedidos (N+1, uma por pedido)
+
+## Resumo do k6 desta rodada (só para contexto; não comparar com resultados/)
+Medição: sem-rotulo
+Carga: 20 usuários virtuais por 60s
+
+Requisições:        2065
+Requisições/s:      32.73
+Tempo de resposta:  mediana 205.4 ms | p95 2002.7 ms | p99 5829.0 ms
+Erros:              0.00%
+
+Por rota:
+rota                  req       mediana       p95           p99           erros   
+cliente               535       92.5 ms       218.1 ms      391.0 ms      0.0%    
+cliente-por-email     302       91.2 ms       202.8 ms      300.2 ms      0.0%    
+pedidos-do-cliente    431       1294.6 ms     2849.3 ms     4365.5 ms     0.0%    
+pedidos-por-status    297       384.1 ms      1001.6 ms     1595.9 ms     0.0%    
+busca-produtos        310       200.7 ms      404.8 ms      596.9 ms      0.0%    
+vendas-por-dia        154       319.3 ms      648.8 ms      1187.8 ms     0.0%    
+top-produtos          36        6504.9 ms     13353.6 ms    15012.3 ms    0.0%    
+
+## pg_stat_statements, ordenado por tempo total
+ calls | total_s | pct  | media_ms |  rows   | blocos_lidos | temp_blks_written |                                          consulta                                          
+-------+---------+------+----------+---------+--------------+-------------------+--------------------------------------------------------------------------------------------
+    36 |   270.8 | 61.2 |  7520.99 |     360 |       455875 |                 0 | SELECT pr.id, pr.nome, pr.categoria, sum(i.quantidade) AS unidades, sum(i.quantidade * i.p
+   154 |    43.0 |  9.7 |   279.20 | 1990960 |      2817365 |                 0 | SELECT p.id AS pedido_id, p.criado_em, p.observacoes, i.quantidade, i.preco_unitario_centa
+   297 |    41.4 |  9.4 |   139.48 |    5940 |      2899682 |             17792 | SELECT * FROM pedidos WHERE status = $1 ORDER BY criado_em DESC, id DESC LIMIT $2 OFFSET $
+   297 |    40.8 |  9.2 |   137.41 |     297 |       216835 |                 0 | SELECT count(*) AS total FROM pedidos WHERE status = $1
+   310 |    37.0 |  8.4 |   119.48 |    6200 |        58918 |                 0 | SELECT * FROM produtos WHERE nome ILIKE $2 || $1 || $3 ORDER BY nome, id LIMIT $4
+   966 |     4.6 |  1.0 |     4.81 |     966 |         2898 |                 0 | SELECT * FROM clientes WHERE id = $1
+   431 |     2.1 |  0.5 |     4.85 |    2155 |         3454 |                 0 | SELECT * FROM pedidos WHERE cliente_id = $1 ORDER BY criado_em DESC, id DESC
+   302 |     2.1 |  0.5 |     6.91 |     302 |         1214 |                 0 | SELECT * FROM clientes WHERE lower(email) = lower($1) ORDER BY id
+  6395 |     0.5 |  0.1 |     0.07 |    6395 |        19185 |                 0 | SELECT * FROM produtos WHERE id = $1
+  2155 |     0.2 |  0.1 |     0.11 |    6395 |         8640 |                 0 | SELECT * FROM itens_pedido WHERE pedido_id = $1 ORDER BY id
+(10 rows)
+

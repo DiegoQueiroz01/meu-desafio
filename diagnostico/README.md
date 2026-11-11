@@ -9,6 +9,7 @@ Coletado em 2026-11-09 sobre o commit `c959835` (aplicação sem mudanças). Cad
 | [01-banco-ambiente.txt](01-banco-ambiente.txt) | Versão, tamanho das tabelas, índices existentes e parâmetros do PostgreSQL |
 | [02 a 08-explain-*.txt](.) | `EXPLAIN (ANALYZE, BUFFERS)` da consulta de cada rota, com parâmetros no formato que o teste de carga usa |
 | [09-conexoes-por-requisicao.txt](09-conexoes-por-requisicao.txt) | Tempo de cada rota sem carga e quantas conexões ao banco cada requisição abre |
+| [12-consumo-por-consulta.txt](12-consumo-por-consulta.txt) | Tempo de banco gasto por consulta numa rodada de carga, com índices e pool (`pg_stat_statements`) |
 | [10-explain-com-indices.txt](10-explain-com-indices.txt) | Mesmas consultas de 02 a 08 com `banco/03-indices.sql` aplicado, e o tamanho de cada índice (hipótese 01) |
 
 ## O que as evidências mostram
@@ -36,3 +37,22 @@ Coletado em 2026-11-09 sobre o commit `c959835` (aplicação sem mudanças). Cad
 - As rotas pesadas (4 a 7) ocupam a única CPU do banco. Todas as outras esperam na fila, inclusive as rápidas. Sem carga, `/clientes/4242` levou 4,5 ms ([09](09-conexoes-por-requisicao.txt)). Na carga, a mediana dessa rota foi de 200 a 290 ms ([resumos da linha de base](../resultados/)).
 - Abrir uma conexão por consulta soma o custo de criar um processo no PostgreSQL a cada consulta. No N+1 isso se multiplica.
 - Índices certos devem tirar a maior parte da leitura de tabela inteira. Esta é uma hipótese: só a medição confirma.
+
+## Depois das hipóteses 01 e 02: onde o banco gasta o tempo
+
+Coletado em 2026-11-11 sobre a branch `integracao` (índices + pool), com `pg_stat_statements` ligado só para este diagnóstico. Método e ressalvas no próprio arquivo: [12-consumo-por-consulta.txt](12-consumo-por-consulta.txt).
+
+| Consulta (rota) | Chamadas | Tempo total no banco |
+|---|---|---|
+| `top-produtos` | 36 | 61.2% |
+| `vendas-por-dia` | 154 | 9.7% |
+| página de `pedidos-por-status` | 297 | 9.4% |
+| `count(*)` de `pedidos-por-status` | 297 | 9.2% |
+| `busca-produtos` | 310 | 8.4% |
+| as 4 consultas de `pedidos-do-cliente` | 431 requisições | menos de 2% somadas |
+
+**10. `top-produtos` ocupa a maior parte do banco.** São só 2% das requisições, mas cada chamada levou em média 7520.99 ms dentro do banco, porque soma todos os itens a cada vez. A porcentagem é tempo decorrido, que inclui a espera pela CPU, e não conta os processos paralelos da consulta: serve para comparar as consultas entre si, não como medida exata de CPU.
+
+**11. O N+1 de `pedidos-do-cliente` quase não gasta banco.** Cada consulta leva menos de 5 ms em média. A rota é lenta porque faz as consultas uma depois da outra, e cada uma espera a vez no pool e na CPU. Corrigir o N+1 deve melhorar o tempo dessa rota, mas libera pouca CPU.
+
+**12. A página de `pedidos-por-status` ainda grava arquivos temporários** (17792 blocos), mesmo com o índice da hipótese 01. Ainda não investigado.
