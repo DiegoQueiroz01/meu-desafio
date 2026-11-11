@@ -1,0 +1,23 @@
+# Conexões abertas e tempo por requisição, uma requisição por vez, sem carga — 2026-11-11T16:07:24Z código do commit 3d1c2be + api/src/db.js com pg.Pool (max 10), a mudança da hipótese 02
+# 'conexoes' = diferença de pg_stat_database.sessions antes/depois, menos 1 (a sessão do próprio psql que lê o contador)
+# Mesmo método do arquivo 09. Antes de cada URL, uma requisição de aquecimento à mesma URL deixa o pool com conexões abertas (o pool fecha conexões ociosas após 10 s).
+url                                                           status    tempo_s  conexoes
+/clientes/4242                                                   200   0.001319         0
+/clientes?email=cliente4242%40exemplo.com                        200   0.022797         0
+/clientes/4242/pedidos                                           200   0.291196         0
+/clientes/77/pedidos                                             200   0.304858         0
+/pedidos?status=pago&pagina=500                                  200   0.174895         0
+/produtos/busca?q=cadeira                                        200   0.007584         0
+/relatorios/vendas-por-dia?inicio=2024-03-01&fim=2024-03-07      200   0.117188         0
+/relatorios/top-produtos?limite=10                               200   0.531538         0
+
+# Segunda rodada, para conferir a repetição:
+url                                                           status    tempo_s  conexoes
+/clientes/4242                                                   200   0.001220         0
+/clientes?email=cliente4242%40exemplo.com                        200   0.019642         0
+/clientes/4242/pedidos                                           200   0.309531         0
+/clientes/77/pedidos                                             200   0.306387         0
+/pedidos?status=pago&pagina=500                                  200   1.009502         0
+/produtos/busca?q=cadeira                                        200   0.009073         0
+/relatorios/vendas-por-dia?inicio=2024-03-01&fim=2024-03-07      200   0.110441         0
+/relatorios/top-produtos?limite=10                               200   0.522888         0
