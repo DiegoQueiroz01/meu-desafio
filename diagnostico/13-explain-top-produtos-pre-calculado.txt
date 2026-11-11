@@ -1,0 +1,43 @@
+# 2026-11-11T18:55:39Z código do commit 3d1c2be + banco/04-top-produtos.sql e api/src/rotas.js (hipótese 03), banco recriado do zero, sem carga
+
+## Consulta nova da rota (limite=10, o padrão)
+-- SELECT id, nome, categoria, unidades, receita_centavos FROM top_produtos ORDER BY receita_centavos DESC, id LIMIT 10
+                                                                      QUERY PLAN                                                                      
+------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.29..1.13 rows=10 width=57) (actual time=0.011..0.020 rows=10 loops=1)
+   Buffers: shared hit=12
+   ->  Index Scan using top_produtos_receita_idx on top_produtos  (cost=0.29..1616.29 rows=19206 width=57) (actual time=0.010..0.018 rows=10 loops=1)
+         Buffers: shared hit=12
+ Planning:
+   Buffers: shared hit=89
+ Planning Time: 0.196 ms
+ Execution Time: 0.032 ms
+(8 rows)
+
+## Consulta nova com limite=50 (o máximo)
+                                                                      QUERY PLAN                                                                      
+------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.29..4.49 rows=50 width=57) (actual time=0.010..0.052 rows=50 loops=1)
+   Buffers: shared hit=51
+   ->  Index Scan using top_produtos_receita_idx on top_produtos  (cost=0.29..1616.29 rows=19206 width=57) (actual time=0.010..0.049 rows=50 loops=1)
+         Buffers: shared hit=51
+ Planning:
+   Buffers: shared hit=89
+ Planning Time: 0.197 ms
+ Execution Time: 0.067 ms
+(8 rows)
+
+## Tamanho da visão e dos índices
+         relname          | relkind | tamanho | linhas_estimadas 
+--------------------------+---------+---------+------------------
+ top_produtos             | m       | 2048 kB |            19206
+ top_produtos_id_idx      | i       | 440 kB  |            19206
+ top_produtos_receita_idx | i       | 608 kB  |            19206
+(3 rows)
+
+## Custo de atualizar a visão (o que uma loja real pagaria a cada refresh)
+Timing is on.
+REFRESH MATERIALIZED VIEW
+Time: 704.293 ms
+REFRESH MATERIALIZED VIEW
+Time: 743.291 ms
