@@ -6,7 +6,7 @@ Cada ideia testada vira uma linha na tabela e uma seção abaixo. Os números de
 |---|---|---|---|---|---|---|---|
 | 01 | Índices B-tree nos filtros e ordenações das rotas | [PostgreSQL 16, cap. 11](https://www.postgresql.org/docs/16/indexes.html) | aplicada e medida | 4.78 req/s, p95 14401.8 ms | 19.73 req/s, p95 4102.9 ms | `resultados/20261110-1750*`, `-1752*`, `-1753*` `-01-indices` | Confirmada: mais vazão e menos latência em todas as rotas; o banco segue em ~100% de CPU, agora limitado por N+1, conexões e `top-produtos` |
 | 02 | Pool de conexões (`pg.Pool`) na API | [node-postgres, Pooling](https://node-postgres.com/features/pooling) | aplicada e medida | 4.78 req/s, p95 14401.8 ms | 5.51 req/s, p95 13922.4 ms | `resultados/20261111-1308*`, `-1309*`, `-1311*` `-02-pool-conexoes` | Confirmada com ganho pequeno: o banco segue preso em `Seq Scan`; rotas rápidas pioraram na mediana (fila de 10 conexões) |
-| 01+02 | Índices (01) e pool de conexões (02) juntos | as fontes de 01 e 02 | em medição | | | | |
+| 01+02 | Índices (01) e pool de conexões (02) juntos | as fontes de 01 e 02 | aplicada e medida | só 01: 19.73 req/s, p95 4102.9 ms | 36.47 req/s, p95 2467.9 ms | `resultados/20261111-1459*`, `-1500*`, `-1502*` `-01-02-indices-pool` | Confirmada: com os índices, o custo de abrir conexões passou a pesar; o pool, que sozinho rendeu pouco, aumentou bastante a vazão sobre os índices |
 
 ---
 
@@ -238,4 +238,45 @@ Medido sozinho, o pool teve ganho pequeno porque o banco gastava quase toda a CP
 
 ### Resultado
 
-Ainda não medido.
+Medido em 2026-11-11 no commit `66fe7e4`, banco recriado do zero, contrato mantido nas 3 execuções. Cada valor é a mediana (o valor do meio) das 3 execuções, tirado dos `resumo.txt` e `recursos.txt` das pastas:
+
+- Antes (só índices): `resultados/20261110-175053-01-indices`, `20261110-175215-01-indices`, `20261110-175337-01-indices`
+- Depois (índices + pool): `resultados/20261111-145918-01-02-indices-pool`, `20261111-150047-01-02-indices-pool`, `20261111-150210-01-02-indices-pool`
+
+**Geral**
+
+| Métrica | Só índices (01) | Índices + pool (01+02) |
+|---|---|---|
+| Requisições em 60 s | 1220 | 2274 |
+| Requisições/s | 19.73 | 36.47 |
+| Tempo de resposta, mediana | 204.5 ms | 129.8 ms |
+| Tempo de resposta, p95 | 4102.9 ms | 2467.9 ms |
+| Tempo de resposta, p99 | 10061.1 ms | 4696.5 ms |
+| Erros | 0.00% | 0.00% |
+| CPU média do banco | 98.7% | 98.4% |
+| Memória máxima do banco (limite 512 MiB) | 403.3 MiB | 378.5 MiB |
+| CPU média da API | 15.8% | 21.8% |
+| Memória máxima da API (limite 256 MiB) | 70.6 MiB | 55.4 MiB |
+
+**Por rota** (mediana / p95, em ms)
+
+| Rota | Só índices (01) | Índices + pool (01+02) |
+|---|---|---|
+| `cliente` | 99.3 / 206.8 | 44.1 / 228.3 |
+| `cliente-por-email` | 100.8 / 212.6 | 40.5 / 203.7 |
+| `pedidos-do-cliente` | 1843.7 / 4084.1 | 882.7 / 2706.3 |
+| `pedidos-por-status` | 575.3 / 9586.8 | 302.2 / 4432.9 |
+| `busca-produtos` | 199.8 / 395.4 | 94.6 / 261.8 |
+| `vendas-por-dia` | 1252.7 / 4921.9 | 594.4 / 2053.5 |
+| `top-produtos` | 7169.8 / 10950.6 | 3153.1 / 5361.1 |
+
+### Conclusão
+
+A hipótese foi **confirmada**: contra os índices sozinhos, a mediana de requisições/s subiu (19.73 → 36.47) e a de p95 geral caiu (4102.9 → 2467.9 ms), com o contrato mantido. Nas 3 execuções de cada lado, os valores não se sobrepõem: requisições/s de 18.96 a 19.97 antes e de 36.37 a 37.22 depois; p95 de 3813.2 a 4196.4 ms antes e de 2309.1 a 2525.9 ms depois.
+
+- **Um gargalo escondia o outro.** Sozinho, sobre a aplicação original, o pool levou as requisições/s de 4.78 para 5.51 (seção 02). Sobre os índices, levou de 19.73 para 36.47. Com o `Seq Scan`, abrir conexões era uma parte pequena do trabalho do banco; com as consultas baratas, passou a ser uma parte grande. Por isso a medição combinada era necessária.
+- **A fila do pool não apareceu como na medição isolada.** A mediana de `cliente` caiu de 99.3 para 44.1 ms, em vez de piorar. O p95 de `cliente` subiu um pouco (206.8 → 228.3 ms); as outras rotas melhoraram em mediana e em p95.
+- **O banco continua perto de 100% de CPU**, mas atende quase o dobro de requisições com a mesma CPU.
+- **Custo:** nenhum serviço novo e nenhum limite alterado. A CPU média da API subiu de 15.8% para 21.8%, porque atende mais requisições; a memória máxima do banco ficou em 378.5 MiB (antes 403.3 MiB).
+- **O que ainda pesa:** `top-produtos` (p95 5361.1 ms), `pedidos-por-status` (p95 4432.9 ms, `count(*)` de `pago` e `OFFSET`) e `pedidos-do-cliente` (p95 2706.3 ms, N+1: ainda são 17 consultas por requisição, agora sem abrir conexões).
+- **Limites:** o tamanho do pool (`max: 10`) não foi variado.
