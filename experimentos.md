@@ -4,7 +4,7 @@ Cada ideia testada vira uma linha na tabela e uma seção abaixo. Os números de
 
 | # | Ideia | Fonte | Status | Antes | Depois | Pastas | Conclusão |
 |---|---|---|---|---|---|---|---|
-| 02 | Pool de conexões (`pg.Pool`) na API | [node-postgres, Pooling](https://node-postgres.com/features/pooling) | em medição | | | | |
+| 02 | Pool de conexões (`pg.Pool`) na API | [node-postgres, Pooling](https://node-postgres.com/features/pooling) | aplicada e medida | 4.78 req/s, p95 14401.8 ms | 5.51 req/s, p95 13922.4 ms | `resultados/20261111-1308*`, `-1309*`, `-1311*` `-02-pool-conexoes` | Confirmada com ganho pequeno: o banco segue preso em `Seq Scan`; rotas rápidas pioraram na mediana (fila de 10 conexões) |
 
 ---
 
@@ -64,4 +64,44 @@ Os tempos desse arquivo não são o resultado do experimento: o resultado sob ca
 
 ### Resultado
 
-Ainda não medido.
+Medido em 2026-11-11 no commit `856e1b1`, banco recriado do zero, contrato mantido nas 3 execuções. Cada valor é a mediana (o valor do meio) das 3 execuções, tirado dos `resumo.txt` e `recursos.txt` das pastas:
+
+- Antes: `resultados/20261104-094609-00-linha-de-base`, `20261104-095227-00-linha-de-base`, `20261104-095420-00-linha-de-base`
+- Depois: `resultados/20261111-130807-02-pool-conexoes`, `20261111-130934-02-pool-conexoes`, `20261111-131102-02-pool-conexoes`
+
+**Geral**
+
+| Métrica | Antes | Depois |
+|---|---|---|
+| Requisições em 60 s | 308 | 349 |
+| Requisições/s | 4.78 | 5.51 |
+| Tempo de resposta, mediana | 800.1 ms | 920.5 ms |
+| Tempo de resposta, p95 | 14401.8 ms | 13922.4 ms |
+| Tempo de resposta, p99 | 16990.0 ms | 15948.3 ms |
+| Erros | 0.00% | 0.00% |
+| CPU média do banco | 99.8% | 98.5% |
+| Memória máxima do banco (limite 512 MiB) | 283.6 MiB | 295.0 MiB |
+| CPU média da API | 5.8% | 4.5% |
+| Memória máxima da API (limite 256 MiB) | 40.5 MiB | 40.1 MiB |
+
+**Por rota** (mediana / p95, em ms)
+
+| Rota | Antes | Depois |
+|---|---|---|
+| `cliente` | 203.2 / 497.8 | 372.4 / 872.1 |
+| `cliente-por-email` | 799.5 / 1401.1 | 703.7 / 1499.4 |
+| `pedidos-do-cliente` | 12177.9 / 16231.5 | 11199.1 / 15829.6 |
+| `pedidos-por-status` | 4598.7 / 14459.8 | 2712.4 / 8016.4 |
+| `busca-produtos` | 494.1 / 732.6 | 497.9 / 826.0 |
+| `vendas-por-dia` | 4614.2 / 6529.3 | 2897.9 / 4114.7 |
+| `top-produtos` | 9902.8 / 15539.6 | 6514.0 / 12672.9 |
+
+### Conclusão
+
+Pelo critério definido antes de medir, a hipótese foi **confirmada, com ganho pequeno**: a mediana de requisições/s subiu (4.78 → 5.51) e a de p95 geral caiu (14401.8 → 13922.4 ms), com o contrato mantido. Nas 3 execuções de cada lado, os valores não se sobrepõem: requisições/s de 4.71 a 4.79 antes e de 5.44 a 5.65 depois; p95 de 14260.1 a 15731.8 ms antes e de 13897.1 a 13992.4 ms depois.
+
+- **O ganho foi pequeno, como esperado.** O banco continua em ~100% de CPU, porque o custo principal é ler tabelas inteiras (`Seq Scan`), não abrir conexões.
+- **`pedidos-do-cliente` quase não mudou** (mediana 12177.9 → 11199.1 ms), mesmo sendo a rota que deixou de abrir 17 conexões. Cada uma das suas consultas de itens ainda lê a `itens_pedido` inteira; o custo de conexão é pequeno perto disso.
+- **As rotas pesadas melhoraram** (`pedidos-por-status`, `vendas-por-dia`, `top-produtos`), e as rápidas pioraram: a mediana de `cliente` foi de 203.2 para 372.4 ms, e a mediana geral subiu de 800.1 para 920.5 ms. Uma explicação provável, ainda não testada: com no máximo 10 conexões, uma consulta rápida espera na fila da API enquanto consultas lentas ocupam as conexões. Antes, cada requisição abria a sua e disputava a CPU direto no banco.
+- **Custo:** nenhum serviço novo e nenhum limite alterado. A memória máxima do banco ficou em 295.0 MiB (antes 283.6 MiB), com até 10 processos abertos o tempo todo durante a carga.
+- **Limites:** medido sozinho, sobre a aplicação original. Segundo o plano, a mudança deve ser medida de novo junto com os índices (hipótese 01), quando o custo das consultas cai e o custo de conexão passa a pesar mais. O tamanho do pool (`max: 10`) não foi variado.
