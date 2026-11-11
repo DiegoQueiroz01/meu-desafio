@@ -4,7 +4,7 @@ Cada ideia testada vira uma linha na tabela e uma seção abaixo. Os números de
 
 | # | Ideia | Fonte | Status | Antes | Depois | Pastas | Conclusão |
 |---|---|---|---|---|---|---|---|
-| 03 | `top-produtos` pré-calculado numa visão materializada | [PostgreSQL 16, Materialized Views](https://www.postgresql.org/docs/16/rules-materializedviews.html) | em medição | | | | |
+| 03 | `top-produtos` pré-calculado numa visão materializada | [PostgreSQL 16, Materialized Views](https://www.postgresql.org/docs/16/rules-materializedviews.html) | aplicada e medida | 4.78 req/s, p95 14401.8 ms | 5.05 req/s, p95 14096.8 ms | `resultados/20261111-1556*`, `-1557*`, `-1559*` `-03-top-produtos` | Confirmada com ganho geral pequeno: a rota caiu de 9902.8 para 251.9 ms de mediana, mas as outras seguem presas em `Seq Scan` |
 
 ---
 
@@ -56,4 +56,44 @@ Esses tempos não são o resultado do experimento: o resultado sob carga vem do 
 
 ### Resultado
 
-Ainda não medido.
+Medido em 2026-11-11 no commit `b8236f7`, banco recriado do zero, contrato mantido nas 3 execuções. Cada valor é a mediana (o valor do meio) das 3 execuções, tirado dos `resumo.txt` e `recursos.txt` das pastas:
+
+- Antes: `resultados/20261104-094609-00-linha-de-base`, `20261104-095227-00-linha-de-base`, `20261104-095420-00-linha-de-base`
+- Depois: `resultados/20261111-155609-03-top-produtos`, `20261111-155735-03-top-produtos`, `20261111-155901-03-top-produtos`
+
+**Geral**
+
+| Métrica | Antes | Depois |
+|---|---|---|
+| Requisições em 60 s | 308 | 324 |
+| Requisições/s | 4.78 | 5.05 |
+| Tempo de resposta, mediana | 800.1 ms | 816.4 ms |
+| Tempo de resposta, p95 | 14401.8 ms | 14096.8 ms |
+| Tempo de resposta, p99 | 16990.0 ms | 16521.1 ms |
+| Erros | 0.00% | 0.00% |
+| CPU média do banco | 99.8% | 98.3% |
+| Memória máxima do banco (limite 512 MiB) | 283.6 MiB | 236.9 MiB |
+| CPU média da API | 5.8% | 5.5% |
+| Memória máxima da API (limite 256 MiB) | 40.5 MiB | 42.5 MiB |
+
+**Por rota** (mediana / p95, em ms)
+
+| Rota | Antes | Depois |
+|---|---|---|
+| `cliente` | 203.2 / 497.8 | 200.4 / 398.8 |
+| `cliente-por-email` | 799.5 / 1401.1 | 896.3 / 1348.2 |
+| `pedidos-do-cliente` | 12177.9 / 16231.5 | 12598.3 / 15851.2 |
+| `pedidos-por-status` | 4598.7 / 14459.8 | 4701.5 / 11166.0 |
+| `busca-produtos` | 494.1 / 732.6 | 403.6 / 801.3 |
+| `vendas-por-dia` | 4614.2 / 6529.3 | 4627.5 / 6344.0 |
+| `top-produtos` | 9902.8 / 15539.6 | 251.9 / 467.3 |
+
+### Conclusão
+
+Pelo critério definido antes de medir, a hipótese foi **confirmada, com ganho geral pequeno**: a mediana de requisições/s subiu (4.78 → 5.05) e a de p95 geral caiu (14401.8 → 14096.8 ms), com o contrato mantido. Nas 3 execuções de cada lado, os valores não se sobrepõem, mas por pouco: requisições/s de 4.71 a 4.79 antes e de 4.85 a 5.10 depois; p95 de 14260.1 a 15731.8 ms antes e de 13283.3 a 14163.7 ms depois.
+
+- **A rota mudou muito; a aplicação, pouco.** A mediana de `top-produtos` caiu de 9902.8 para 251.9 ms. As outras rotas ficaram parecidas com a linha de base, dentro da variação entre execuções.
+- **Por que o ganho geral foi pequeno:** na aplicação original, `top-produtos` teve só 4 requisições por execução (de 308 a 324 no total). As outras rotas leem tabelas inteiras (`Seq Scan`) e continuam ocupando a CPU do banco, que ficou em 98.3%. Os 61.2% do diagnóstico 12 foram medidos sobre índices e pool, quando as outras consultas já eram baratas. É o mesmo efeito visto com o pool (seção 02): um gargalo esconde o outro.
+- **A memória máxima do banco caiu** de 283.6 para 236.9 MiB (de 282.2–287.1 MiB antes para 221.9–238.6 MiB depois, sem sobreposição). Uma explicação provável, não testada: a soma de 1,5 milhão de itens usava memória para agrupar e processos paralelos (diagnóstico 08), e ela não roda mais durante a carga.
+- **Custo:** dados defasados até o próximo refresh, ~0,7 s de banco por refresh e 3 MB de disco (seção Custo).
+- **Limites:** medido sozinho, sobre a aplicação original. A mudança precisa ser medida também na branch `integracao`, onde o diagnóstico 12 indica que o ganho deve ser maior.
