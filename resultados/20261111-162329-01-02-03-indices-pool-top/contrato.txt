@@ -1,0 +1,46 @@
+ Container desafio-performance-contrato-run-4d5c0fc67225 Creating 
+ Container desafio-performance-contrato-run-4d5c0fc67225 Created 
+igual     /clientes/1
+igual     /clientes/2
+igual     /clientes/500
+igual     /clientes/99999
+igual     /clientes/100000
+igual     /clientes/100001
+igual     /clientes/abc
+igual     /clientes?email=cliente3%40exemplo.com
+igual     /clientes?email=Cliente4%40Exemplo.com
+igual     /clientes?email=CLIENTE10%40EXEMPLO.COM
+igual     /clientes?email=ninguem%40exemplo.com
+igual     /clientes
+igual     /clientes/7/pedidos
+igual     /clientes/42/pedidos
+igual     /clientes/31337/pedidos
+igual     /clientes/99999/pedidos
+igual     /clientes/100001/pedidos
+igual     /pedidos?status=pago
+igual     /pedidos?status=entregue&pagina=3
+igual     /pedidos?status=cancelado&pagina=250
+igual     /pedidos?status=pendente&pagina=1
+igual     /pedidos?status=pago&pagina=15000
+igual     /pedidos?status=perdido
+igual     /pedidos?status=pago&pagina=0
+igual     /produtos/busca?q=cadeira
+igual     /produtos/busca?q=lumin
+igual     /produtos/busca?q=ERGO
+igual     /produtos/busca?q=sem%20fio
+igual     /produtos/busca?q=inexistente
+igual     /produtos/busca?q=ab
+igual     /relatorios/vendas-por-dia?inicio=2024-01-01&fim=2024-01-07
+igual     /relatorios/vendas-por-dia?inicio=2024-02-27&fim=2024-03-02
+igual     /relatorios/vendas-por-dia?inicio=2025-12-25&fim=2025-12-31
+igual     /relatorios/vendas-por-dia?inicio=2023-12-30&fim=2024-01-02
+igual     /relatorios/vendas-por-dia?inicio=2024-03-01&fim=2024-02-01
+igual     /relatorios/vendas-por-dia?inicio=2024-01-01&fim=2024-03-01
+igual     /relatorios/vendas-por-dia?inicio=2024-02-30&fim=2024-03-01
+igual     /relatorios/top-produtos
+igual     /relatorios/top-produtos?limite=5
+igual     /relatorios/top-produtos?limite=50
+igual     /relatorios/top-produtos?limite=0
+igual     /relatorios/top-produtos?limite=51
+
+Contrato mantido: as 42 respostas são iguais às gravadas.

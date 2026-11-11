@@ -1,0 +1,17 @@
+Medição: 01-02-03-indices-pool-top
+Carga: 20 usuários virtuais por 60s
+
+Requisições:        5925
+Requisições/s:      98.09
+Tempo de resposta:  mediana 104.6 ms | p95 788.6 ms | p99 1134.0 ms
+Erros:              0.00%
+
+Por rota:
+rota                  req       mediana       p95           p99           erros   
+cliente               1506      12.5 ms       190.3 ms      294.7 ms      0.0%    
+cliente-por-email     883       10.3 ms       172.1 ms      269.4 ms      0.0%    
+pedidos-do-cliente    1243      515.4 ms      1106.2 ms     1467.8 ms     0.0%    
+pedidos-por-status    859       190.0 ms      514.9 ms      1042.4 ms     0.0%    
+busca-produtos        870       94.6 ms       213.1 ms      299.9 ms      0.0%    
+vendas-por-dia        460       204.0 ms      487.1 ms      790.3 ms      0.0%    
+top-produtos          104       14.2 ms       181.7 ms      267.9 ms      0.0%    
