@@ -4,7 +4,7 @@ Cada ideia testada vira uma linha na tabela e uma seção abaixo. Os números de
 
 | # | Ideia | Fonte | Status | Antes | Depois | Pastas | Conclusão |
 |---|---|---|---|---|---|---|---|
-| 08 | Total de pedidos por status pré-calculado numa visão materializada | [PostgreSQL Wiki, Slow Counting](https://wiki.postgresql.org/wiki/Slow_Counting) | em medição | | | | |
+| 08 | Total de pedidos por status pré-calculado numa visão materializada | [PostgreSQL Wiki, Slow Counting](https://wiki.postgresql.org/wiki/Slow_Counting) | aplicada e medida | 4.78 req/s, p95 14401.8 ms | 4.92 req/s, p95 14292.9 ms | `resultados/20261114-1730*`, `-1732*`, `-1733*` `-08-contagem-status` | Confirmada só pelas medianas, dentro da variação: `pedidos-por-status` caiu de 4598.7 para 2455.8 ms de mediana, mas o ganho geral não se separa do ruído |
 
 ---
 
@@ -55,4 +55,43 @@ Esses tempos não são o resultado do experimento: o resultado sob carga vem do 
 
 ### Resultado
 
-Ainda não medido.
+Medido em 2026-11-14 no commit `a70acbe`, banco recriado do zero, contrato mantido nas 3 execuções. Cada valor é a mediana (o valor do meio) das 3 execuções, tirado dos `resumo.txt` e `recursos.txt` das pastas:
+
+- Antes: `resultados/20261104-094609-00-linha-de-base`, `20261104-095227-00-linha-de-base`, `20261104-095420-00-linha-de-base`
+- Depois: `resultados/20261114-173053-08-contagem-status`, `20261114-173221-08-contagem-status`, `20261114-173351-08-contagem-status`
+
+**Geral**
+
+| Métrica | Antes | Depois |
+|---|---|---|
+| Requisições em 60 s | 308 | 321 |
+| Requisições/s | 4.78 | 4.92 |
+| Tempo de resposta, mediana | 800.1 ms | 897.9 ms |
+| Tempo de resposta, p95 | 14401.8 ms | 14292.9 ms |
+| Tempo de resposta, p99 | 16990.0 ms | 17882.2 ms |
+| Erros | 0.00% | 0.00% |
+| CPU média do banco | 99.8% | 98.9% |
+| Memória máxima do banco (limite 512 MiB) | 283.6 MiB | 291.8 MiB |
+| CPU média da API | 5.8% | 5.4% |
+| Memória máxima da API (limite 256 MiB) | 40.5 MiB | 41.0 MiB |
+
+**Por rota** (mediana / p95, em ms)
+
+| Rota | Antes | Depois |
+|---|---|---|
+| `cliente` | 203.2 / 497.8 | 199.4 / 399.8 |
+| `cliente-por-email` | 799.5 / 1401.1 | 850.8 / 1403.7 |
+| `pedidos-do-cliente` | 12177.9 / 16231.5 | 13098.7 / 16911.1 |
+| `pedidos-por-status` | 4598.7 / 14459.8 | 2455.8 / 5573.3 |
+| `busca-produtos` | 494.1 / 732.6 | 495.2 / 804.2 |
+| `vendas-por-dia` | 4614.2 / 6529.3 | 5317.7 / 6745.7 |
+| `top-produtos` | 9902.8 / 15539.6 | 16402.5 / 17995.7 |
+
+### Conclusão
+
+Pelo critério definido antes de medir, a hipótese foi **confirmada só pelas medianas, com ganho dentro da variação**: a mediana de requisições/s subiu (4.78 → 4.92) e a de p95 geral caiu (14401.8 → 14292.9 ms), mas as faixas das 3 execuções se sobrepõem nas duas métricas (requisições/s de 4.71 a 4.79 antes e de 4.71 a 4.98 depois; p95 de 14260.1 a 15731.8 ms antes e de 13697.3 a 15392.1 ms depois). Não dá para separar o ganho geral da variação entre execuções.
+
+- **A rota melhorou:** `pedidos-por-status` caiu de 4598.7 para 2455.8 ms de mediana e de 14459.8 para 5573.3 ms de p95. O que sobrou nela é a página, que na aplicação original ainda ordena 300 mil linhas em disco (hipótese 07).
+- **O ganho geral é pequeno, como esperado:** a contagem era a parte mais barata da rota, a rota é 15% da carga, e o banco continua em 98.9% de CPU por causa das outras leituras de tabela inteira. A mediana geral subiu (800.1 → 897.9 ms), também dentro do que a variação explica.
+- **Custo:** total defasado até o próximo refresh (83,626 ms por refresh, sem carga) e 40 kB de disco (diagnostico/19). Numa loja real, o total poderia não bater com a página.
+- **Limites:** medida sozinha, sobre a aplicação original. Na integração, com índices e a página já barata, a contagem passa a ser uma parte maior do custo da rota (9.2% do tempo do banco no diagnostico/12); lá o efeito deve ficar mais claro.
