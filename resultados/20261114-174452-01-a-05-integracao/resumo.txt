@@ -1,0 +1,17 @@
+Medição: 01-a-05-integracao
+Carga: 20 usuários virtuais por 60s
+
+Requisições:        6098
+Requisições/s:      100.84
+Tempo de resposta:  mediana 126.9 ms | p95 566.8 ms | p99 1112.3 ms
+Erros:              0.00%
+
+Por rota:
+rota                  req       mediana       p95           p99           erros   
+cliente               1557      87.0 ms       299.2 ms      411.7 ms      0.0%    
+cliente-por-email     900       82.4 ms       299.9 ms      426.1 ms      0.0%    
+pedidos-do-cliente    1289      167.6 ms      442.4 ms      593.0 ms      0.0%    
+pedidos-por-status    880       296.6 ms      1245.6 ms     1769.3 ms     0.0%    
+busca-produtos        900       110.2 ms      354.0 ms      471.4 ms      0.0%    
+vendas-por-dia        468       408.1 ms      815.9 ms      989.8 ms      0.0%    
+top-produtos          104       94.3 ms       343.7 ms      399.2 ms      0.0%    
