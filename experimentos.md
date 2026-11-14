@@ -12,6 +12,7 @@ Cada ideia testada vira uma linha na tabela e uma seção abaixo. Os números de
 | 04 | `/clientes/:id/pedidos` com uma consulta, sem N+1 | [Chen et al., ICSE 2014](https://ece.uwaterloo.ca/~wshang/pubs/peter_icse2014.pdf) | aplicada e medida | 4.78 req/s, p95 14401.8 ms | 7.98 req/s, p95 6472.4 ms | `resultados/20261114-1659*`, `-1700*`, `-1702*` `-04-pedidos-do-cliente` | Confirmada: `pedidos-do-cliente` caiu de 12177.9 para 4366.1 ms de mediana; o banco segue em 94.1% de CPU, preso nas outras leituras de tabela inteira |
 | 01+…+04 | Integração 01+02+03 com `pedidos-do-cliente` sem N+1 | as fontes de 01 a 04 | aplicada e medida | 01+02+03: 98.09 req/s, p95 788.6 ms | 101.67 req/s, p95 482.8 ms | `resultados/20261114-1737*`, `-1738*`, `-1740*` `-01-a-04-integracao` | Confirmada: p95 caiu de 788.6 para 482.8 ms, mas a vazão subiu pouco e as rotas rápidas pioraram; a CPU da API (44.1%, máx. 53.5%) passou a limitar |
 | 05 | Log de acesso sem o corpo da resposta | [Node.js 20, A note on process I/O](https://nodejs.org/docs/latest-v20.x/api/process.html#a-note-on-process-io) | aplicada sem ganho | 4.78 req/s, p95 14401.8 ms | 4.90 req/s, p95 14709.0 ms | `resultados/20261114-1707*`, `-1708*`, `-1710*` `-05-log-sem-corpo` | Sem ganho sozinha, como esperado: o gargalo é o banco (97.9% de CPU) e a API usa 5.5%; precisa ser medida na integração |
+| 01+…+05 | Integração 01 a 04 com o log sem o corpo | as fontes de 01 a 05 | aplicada sem ganho | 01 a 04: 101.67 req/s, p95 482.8 ms | 98.90 req/s, p95 566.8 ms | `resultados/20261114-1743*`, `-1744*`, `-1746*` `-01-a-05-integracao` | Refutada: a CPU da API não caiu (44.1% → 45.4%); o log não é o custo da API. Mudança desfeita na `integracao` |
 
 ---
 
@@ -718,4 +719,44 @@ Na integração 01 a 04, a CPU da API ficou em 44.1% de média, com máximas de 
 
 ### Resultado
 
-Ainda não medido.
+Medido em 2026-11-14 no commit `b995852`, banco recriado do zero, contrato mantido nas 3 execuções. Cada valor é a mediana (o valor do meio) das 3 execuções, tirado dos `resumo.txt` e `recursos.txt` das pastas:
+
+- Antes (01 a 04): `resultados/20261114-173736-01-a-04-integracao`, `20261114-173854-01-a-04-integracao`, `20261114-174013-01-a-04-integracao`
+- Depois (01 a 05): `resultados/20261114-174333-01-a-05-integracao`, `20261114-174452-01-a-05-integracao`, `20261114-174611-01-a-05-integracao`
+
+**Geral**
+
+| Métrica | 01 a 04 | 01 a 05 |
+|---|---|---|
+| Requisições em 60 s | 6142 | 5951 |
+| Requisições/s | 101.67 | 98.90 |
+| Tempo de resposta, mediana | 181.6 ms | 131.2 ms |
+| Tempo de resposta, p95 | 482.8 ms | 566.8 ms |
+| Tempo de resposta, p99 | 695.0 ms | 1112.3 ms |
+| Erros | 0.00% | 0.00% |
+| CPU média do banco | 83.7% | 80.0% |
+| Memória máxima do banco (limite 512 MiB) | 251.6 MiB | 247.8 MiB |
+| CPU média da API (limite 50%) | 44.1% | 45.4% |
+| Memória máxima da API (limite 256 MiB) | 48.7 MiB | 60.9 MiB |
+
+**Por rota** (mediana / p95, em ms)
+
+| Rota | 01 a 04 | 01 a 05 |
+|---|---|---|
+| `cliente` | 100.2 / 299.2 | 87.0 / 311.7 |
+| `cliente-por-email` | 101.7 / 313.4 | 89.6 / 319.6 |
+| `pedidos-do-cliente` | 192.7 / 423.3 | 173.5 / 447.4 |
+| `pedidos-por-status` | 299.4 / 682.6 | 296.6 / 1245.6 |
+| `busca-produtos` | 181.9 / 364.2 | 110.2 / 354.0 |
+| `vendas-por-dia` | 305.5 / 607.2 | 408.1 / 815.9 |
+| `top-produtos` | 102.7 / 301.6 | 94.3 / 343.7 |
+
+### Conclusão
+
+Pelo critério definido antes de medir, a hipótese foi **refutada**: contra a integração 01 a 04, a mediana de requisições/s caiu (101.67 → 98.90) e a de p95 geral subiu (482.8 → 566.8 ms). Nas 3 execuções de cada lado, os valores não se sobrepõem: requisições/s de 101.23 a 102.25 antes e de 95.23 a 100.84 depois; p95 de 479.3 a 484.1 ms antes e de 507.2 a 605.6 ms depois.
+
+- **A CPU da API não caiu** (44.1% → 45.4%; de 44.4% a 45.9% nas 3 execuções, com máximas de 50.6% a 52.6%). Converter o corpo para o log e escrevê-lo não era o que ocupava a CPU da API. A hipótese de que o log fosse o custo principal da API (diagnóstico item 9) não se sustenta.
+- **A piora provavelmente não é efeito do log.** Tirar o corpo do log só tira trabalho da API, e as 3 execuções variaram mais entre si do que as da integração 01 a 04 (mediana geral de 126.9 a 176.8 ms; p99 de 727.7 a 1387.9 ms). Uma explicação provável, não testada, é variação do ambiente entre as rodadas. Mesmo assim, pelo critério, não há ganho para mostrar.
+- **Pista para a próxima hipótese:** na medição isolada da hipótese 06, a CPU da API caiu de 5.8% para 2.0% só por somar `vendas-por-dia` no banco. Isso indica que a soma de ~13 mil linhas por chamada pesa mais na API do que o log.
+- **Decisão:** sem ganho, a mudança de [api/src/server.js](api/src/server.js) foi desfeita na branch `integracao` (commit seguinte a este), para a hipótese 06 ser medida sobre a integração 01 a 04. As medições e esta seção ficam como registro. O log sem o corpo continua sendo uma boa prática (diagnostico/16: 68 a 115 bytes por requisição, em vez de 206 a 1983), mas não tem ganho de desempenho medido.
+- **Custo:** nenhum recurso a mais.
