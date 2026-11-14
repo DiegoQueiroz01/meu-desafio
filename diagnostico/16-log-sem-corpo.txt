@@ -1,0 +1,39 @@
+# Hipótese 05 — log de acesso sem o corpo da resposta
+# Coletado em 2026-11-14 na branch hipotese/log-resposta, sobre a aplicação original
+# (sem índices, sem pool, sem a visão de top-produtos).
+
+## 1. Driver de log do container da API
+docker inspect desafio-performance-api-1 --format '{{.HostConfig.LogConfig.Type}} {{json .HostConfig.LogConfig.Config}}'
+json-file {}
+(driver padrão do Docker, sem opções: entrega bloqueante, segundo a documentação do Docker)
+
+## 2. Bytes escritos no log por requisição
+Método: uma requisição por vez, sem carga; tamanho de "docker compose logs --no-log-prefix api" antes e
+1 s depois da requisição. corpo_B = tamanho do corpo da resposta HTTP (curl %{size_download}).
+
+Antes (código original, log com o campo "resposta"):
+url                                                            status    corpo_B      log_B
+/clientes/4242                                                    200        125        206
+/clientes?email=cliente4242%40exemplo.com                         200        127        235
+/clientes/4242/pedidos                                            200       1622       1712
+/pedidos?status=pago&pagina=500                                   200       1814       1913
+/produtos/busca?q=cadeira                                         200       1891       1983
+/relatorios/vendas-por-dia?inicio=2024-03-01&fim=2024-03-07       200        540        667
+/relatorios/top-produtos?limite=10                                200       1257       1359
+
+Depois (log só com metodo, url, status e duracao_ms):
+url                                                            status    corpo_B      log_B
+/clientes/4242                                                    200        125         68
+/clientes?email=cliente4242%40exemplo.com                         200        127         96
+/clientes/4242/pedidos                                            200       1622         78
+/pedidos?status=pago&pagina=500                                   200       1814         87
+/produtos/busca?q=cadeira                                         200       1891         80
+/relatorios/vendas-por-dia?inicio=2024-03-01&fim=2024-03-07       200        540        115
+/relatorios/top-produtos?limite=10                                200       1257         90
+
+Exemplo de linha depois da mudança:
+{"metodo":"GET","url":"/relatorios/top-produtos?limite=10","status":200,"duracao_ms":658}
+
+## 3. Contrato
+scripts/verificar-contrato.sh comparar: "Contrato mantido: as 42 respostas são iguais às gravadas."
+O log não faz parte da resposta HTTP.

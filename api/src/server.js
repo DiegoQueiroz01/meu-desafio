@@ -4,6 +4,8 @@ const rotas = require('./rotas');
 const app = express();
 const porta = Number(process.env.PORT || 3000);
 
+// Log de acesso: uma linha por requisição, sem o corpo da resposta.
+// Antes, o corpo inteiro era convertido para JSON uma vez a mais só para o log.
 app.use((req, res, next) => {
   const inicio = Date.now();
   const enviarJson = res.json.bind(res);
@@ -13,7 +15,6 @@ app.use((req, res, next) => {
       url: req.originalUrl,
       status: res.statusCode,
       duracao_ms: Date.now() - inicio,
-      resposta: corpo,
     }));
     return enviarJson(corpo);
   };
