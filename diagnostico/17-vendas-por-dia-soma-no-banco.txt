@@ -1,0 +1,85 @@
+# Hipótese 06 — /relatorios/vendas-por-dia somando no banco
+# Coletado em 2026-11-14 na branch hipotese/vendas-por-dia-sql, sobre a aplicação original
+# (sem índices, sem pool, sem a visão de top-produtos). Intervalo do exemplo: 2024-03-01 a 2024-03-07
+# (7 dias, o tamanho que o teste de carga usa).
+
+## 1. Quanto a consulta antiga manda para a API
+SELECT count(*), sum(length(observacoes)) FROM pedidos p JOIN itens_pedido i ON i.pedido_id=p.id
+ WHERE p.criado_em::date BETWEEN '2024-03-01' AND '2024-03-07' AND p.status <> 'cancelado';
+12951|3555995
+-> 12951 linhas por requisição, com 3555995 caracteres só na coluna observacoes, que a resposta não usa.
+A API recebia essas linhas e somava por dia em JavaScript.
+
+## 2. EXPLAIN (ANALYZE, BUFFERS) da consulta antiga
+                                                                      QUERY PLAN                                                                        
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+Gather  (cost=26533.22..44653.86 rows=6750 width=298) (actual time=33.838..221.261 rows=12951 loops=1)
+  Workers Planned: 2
+  Workers Launched: 2
+  Buffers: shared hit=15967 read=14614
+  ->  Parallel Hash Join  (cost=25533.22..42978.86 rows=2812 width=298) (actual time=32.137..171.597 rows=4317 loops=3)
+        Hash Cond: (i.pedido_id = p.id)
+        Buffers: shared hit=15967 read=14614
+        ->  Parallel Seq Scan on itens_pedido i  (cost=0.00..15805.00 rows=625000 width=12) (actual time=0.006..109.791 rows=500000 loops=3)
+              Buffers: shared hit=8821 read=734
+        ->  Parallel Hash  (cost=25521.50..25521.50 rows=938 width=290) (actual time=31.760..31.761 rows=1438 loops=3)
+              Buckets: 8192 (originally 4096)  Batches: 1 (originally 1)  Memory Usage: 1536kB
+              Buffers: shared hit=6954 read=13880
+              ->  Parallel Seq Scan on pedidos p  (cost=0.00..25521.50 rows=938 width=290) (actual time=0.055..30.246 rows=1438 loops=3)
+                    Filter: ((status <> 'cancelado'::text) AND ((criado_em)::date >= '2024-03-01'::date) AND ((criado_em)::date <= '2024-03-07'::date))
+                    Rows Removed by Filter: 165228
+                    Buffers: shared hit=6954 read=13880
+Planning:
+  Buffers: shared hit=220
+Planning Time: 0.504 ms
+Execution Time: 221.655 ms
+(20 rows)
+
+
+## 3. EXPLAIN (ANALYZE, BUFFERS) da consulta nova (soma por dia no banco)
+                                                                            QUERY PLAN                                                                              
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+GroupAggregate  (cost=44147.01..45085.03 rows=2250 width=84) (actual time=205.601..212.192 rows=7 loops=1)
+  Group Key: ((p.criado_em)::date)
+  Buffers: shared hit=16254 read=14357
+  ->  Gather Merge  (cost=44147.01..44933.15 rows=6750 width=24) (actual time=205.192..210.998 rows=12951 loops=1)
+        Workers Planned: 2
+        Workers Launched: 2
+        Buffers: shared hit=16254 read=14357
+        ->  Sort  (cost=43146.98..43154.01 rows=2812 width=24) (actual time=203.607..203.743 rows=4317 loops=3)
+              Sort Key: ((p.criado_em)::date), p.id
+              Sort Method: quicksort  Memory: 299kB
+              Buffers: shared hit=16254 read=14357
+              Worker 0:  Sort Method: quicksort  Memory: 448kB
+              Worker 1:  Sort Method: quicksort  Memory: 442kB
+              ->  Parallel Hash Join  (cost=25533.22..42985.89 rows=2812 width=24) (actual time=81.533..202.467 rows=4317 loops=3)
+                    Hash Cond: (i.pedido_id = p.id)
+                    Buffers: shared hit=16126 read=14357
+                    ->  Parallel Seq Scan on itens_pedido i  (cost=0.00..15805.00 rows=625000 width=12) (actual time=0.005..45.642 rows=500000 loops=3)
+                          Buffers: shared hit=8666 read=889
+                    ->  Parallel Hash  (cost=25521.50..25521.50 rows=938 width=12) (actual time=81.110..81.111 rows=1438 loops=3)
+                          Buckets: 4096  Batches: 1  Memory Usage: 320kB
+                          Buffers: shared hit=7366 read=13468
+                          ->  Parallel Seq Scan on pedidos p  (cost=0.00..25521.50 rows=938 width=12) (actual time=0.105..80.896 rows=1438 loops=3)
+                                Filter: ((status <> 'cancelado'::text) AND ((criado_em)::date >= '2024-03-01'::date) AND ((criado_em)::date <= '2024-03-07'::date))
+                                Rows Removed by Filter: 165228
+                                Buffers: shared hit=7366 read=13468
+Planning:
+  Buffers: shared hit=168
+Planning Time: 0.376 ms
+Execution Time: 212.288 ms
+(29 rows)
+
+
+A consulta nova devolve 7 linhas (uma por dia). Corpo da resposta HTTP: 540 bytes, igual ao de antes.
+Sem índices, o banco lê as duas tabelas inteiras nos dois casos; o tempo no banco fica parecido.
+Estes tempos são de uma consulta por vez, sem carga: não são o resultado do experimento.
+
+## 4. Mesma resposta: comparação com a lógica antiga
+Script executado dentro do container da API: para cada intervalo, monta a resposta com a consulta e a
+soma em JavaScript do código original e compara o texto JSON com a resposta HTTP da rota nova.
+Intervalos: 60 de 7 dias sorteados entre 2024-01-01 e 2025-12-25 (gerador fixo, semente 777, como na carga),
+mais 2024-01-01..07, 2025-12-25..31, 1 dia (2024-01-01 e 2025-12-31), 31 dias (2024-04-10..05-10,
+2025-12-01..31) e 2 intervalos sem vendas (2026-01-05..10 e 2023-12-22..28).
+Resultado: intervalos comparados: 68, iguais: 68, diferentes: 0 (dos quais 2 sem vendas)
+O scripts/verificar-contrato.sh comparar terminou em "Contrato mantido: as 42 respostas são iguais às gravadas."

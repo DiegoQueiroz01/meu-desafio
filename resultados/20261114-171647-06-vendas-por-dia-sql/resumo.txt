@@ -1,0 +1,17 @@
+Medição: 06-vendas-por-dia-sql
+Carga: 20 usuários virtuais por 60s
+
+Requisições:        298
+Requisições/s:      4.49
+Tempo de resposta:  mediana 949.4 ms | p95 14444.7 ms | p99 21014.1 ms
+Erros:              0.00%
+
+Por rota:
+rota                  req       mediana       p95           p99           erros   
+cliente               72        197.8 ms      391.8 ms      429.1 ms      0.0%    
+cliente-por-email     49        898.8 ms      1495.2 ms     1962.2 ms     0.0%    
+pedidos-do-cliente    66        12248.3 ms    15557.5 ms    16404.0 ms    0.0%    
+pedidos-por-status    36        4801.2 ms     12257.8 ms    25989.7 ms    0.0%    
+busca-produtos        48        450.2 ms      892.2 ms      951.3 ms      0.0%    
+vendas-por-dia        22        3749.0 ms     6685.4 ms     6786.3 ms     0.0%    
+top-produtos          5         18069.4 ms    21163.9 ms    21195.1 ms    0.0%    

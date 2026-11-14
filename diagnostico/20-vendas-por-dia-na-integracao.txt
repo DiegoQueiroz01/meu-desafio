@@ -1,0 +1,84 @@
+# Hipótese 06 na integração — vendas-por-dia com os índices da hipótese 01
+# Coletado em 2026-11-14 na branch integracao (commit 23cf736: hipóteses 01 a 04), banco recriado do zero
+# pela medição 01-a-05-integracao. Mesmo período do diagnostico/17: 2024-03-01 a 2024-03-07.
+# Cada consulta rodou 2 vezes; abaixo, a segunda (cache aquecido).
+
+## Índices em pedidos e itens_pedido
+         indexname          
+----------------------------
+ itens_pedido_pedido_idx
+ itens_pedido_pkey
+ pedidos_cliente_criado_idx
+ pedidos_criado_dia_idx
+ pedidos_pkey
+ pedidos_status_criado_idx
+(6 rows)
+
+## Consulta antiga (soma em JavaScript na API)
+                                                                      QUERY PLAN                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Gather  (cost=1062.46..23391.62 rows=12072 width=298) (actual time=0.835..10.185 rows=12951 loops=1)
+  Workers Planned: 2
+  Workers Launched: 2
+  Buffers: shared hit=18315
+  ->  Nested Loop  (cost=62.46..21184.42 rows=5030 width=298) (actual time=0.224..5.420 rows=4317 loops=3)
+        Buffers: shared hit=18315
+        ->  Parallel Bitmap Heap Scan on pedidos p  (cost=62.03..10904.50 rows=1677 width=290) (actual time=0.205..1.446 rows=1438 loops=3)
+              Recheck Cond: (((criado_em)::date >= '2024-03-01'::date) AND ((criado_em)::date <= '2024-03-07'::date))
+              Filter: (status <> 'cancelado'::text)
+              Rows Removed by Filter: 159
+              Heap Blocks: exact=382
+              Buffers: shared hit=1003
+              ->  Bitmap Index Scan on pedidos_criado_dia_idx  (cost=0.00..61.02 rows=4460 width=0) (actual time=0.485..0.485 rows=4793 loops=1)
+                    Index Cond: (((criado_em)::date >= '2024-03-01'::date) AND ((criado_em)::date <= '2024-03-07'::date))
+                    Buffers: shared hit=7
+        ->  Index Scan using itens_pedido_pedido_idx on itens_pedido i  (cost=0.43..6.09 rows=4 width=12) (actual time=0.002..0.002 rows=3 loops=4315)
+              Index Cond: (pedido_id = p.id)
+              Buffers: shared hit=17312
+Planning:
+  Buffers: shared hit=349
+Planning Time: 0.727 ms
+Execution Time: 10.577 ms
+(22 rows)
+
+
+## Consulta nova (soma por dia no banco)
+                                                                            QUERY PLAN                                                                             
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+GroupAggregate  (cost=22506.27..24109.72 rows=728 width=84) (actual time=9.169..13.409 rows=7 loops=1)
+  Group Key: ((p.criado_em)::date)
+  Buffers: shared hit=18345
+  ->  Gather Merge  (cost=22506.27..23912.26 rows=12072 width=24) (actual time=8.716..12.245 rows=12951 loops=1)
+        Workers Planned: 2
+        Workers Launched: 2
+        Buffers: shared hit=18345
+        ->  Sort  (cost=21506.25..21518.83 rows=5030 width=24) (actual time=6.863..6.992 rows=4317 loops=3)
+              Sort Key: ((p.criado_em)::date), p.id
+              Sort Method: quicksort  Memory: 473kB
+              Buffers: shared hit=18345
+              Worker 0:  Sort Method: quicksort  Memory: 302kB
+              Worker 1:  Sort Method: quicksort  Memory: 319kB
+              ->  Nested Loop  (cost=62.46..21197.00 rows=5030 width=24) (actual time=0.228..5.695 rows=4317 loops=3)
+                    Buffers: shared hit=18315
+                    ->  Parallel Bitmap Heap Scan on pedidos p  (cost=62.03..10904.50 rows=1677 width=12) (actual time=0.205..1.520 rows=1438 loops=3)
+                          Recheck Cond: (((criado_em)::date >= '2024-03-01'::date) AND ((criado_em)::date <= '2024-03-07'::date))
+                          Filter: (status <> 'cancelado'::text)
+                          Rows Removed by Filter: 159
+                          Heap Blocks: exact=388
+                          Buffers: shared hit=1003
+                          ->  Bitmap Index Scan on pedidos_criado_dia_idx  (cost=0.00..61.02 rows=4460 width=0) (actual time=0.495..0.495 rows=4793 loops=1)
+                                Index Cond: (((criado_em)::date >= '2024-03-01'::date) AND ((criado_em)::date <= '2024-03-07'::date))
+                                Buffers: shared hit=7
+                    ->  Index Scan using itens_pedido_pedido_idx on itens_pedido i  (cost=0.43..6.09 rows=4 width=12) (actual time=0.002..0.002 rows=3 loops=4315)
+                          Index Cond: (pedido_id = p.id)
+                          Buffers: shared hit=17312
+Planning:
+  Buffers: shared hit=280
+Planning Time: 0.642 ms
+Execution Time: 13.512 ms
+(31 rows)
+
+
+Com o índice pedidos((criado_em::date)), as duas consultas ficam baratas no banco (10,577 ms e 13,512 ms).
+A diferença está no que vai para a API: 12951 linhas (largura 298 bytes no plano, com observacoes) contra 7.
+Estes tempos são de uma consulta por vez, sem carga: não são o resultado do experimento.
