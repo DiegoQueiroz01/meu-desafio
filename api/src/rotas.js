@@ -120,7 +120,13 @@ rotas.get('/pedidos', assincrono(async (req, res) => {
 
   const [contagem] = await consultar('SELECT count(*) AS total FROM pedidos WHERE status = $1', [status]);
   const linhas = await consultar(
-    'SELECT * FROM pedidos WHERE status = $1 ORDER BY criado_em DESC, id DESC LIMIT $2 OFFSET $3',
+    // Só as colunas da resposta: todas estão no índice de banco/05-indice-status-cobertura.sql,
+    // então o OFFSET pula linhas lendo só o índice (Index Only Scan).
+    `SELECT id, cliente_id, status, criado_em
+       FROM pedidos
+      WHERE status = $1
+      ORDER BY criado_em DESC, id DESC
+      LIMIT $2 OFFSET $3`,
     [status, TAMANHO_PAGINA, (pagina - 1) * TAMANHO_PAGINA],
   );
 
