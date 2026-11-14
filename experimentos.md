@@ -14,6 +14,7 @@ Cada ideia testada vira uma linha na tabela e uma seção abaixo. Os números de
 | 05 | Log de acesso sem o corpo da resposta | [Node.js 20, A note on process I/O](https://nodejs.org/docs/latest-v20.x/api/process.html#a-note-on-process-io) | aplicada sem ganho | 4.78 req/s, p95 14401.8 ms | 4.90 req/s, p95 14709.0 ms | `resultados/20261114-1707*`, `-1708*`, `-1710*` `-05-log-sem-corpo` | Sem ganho sozinha, como esperado: o gargalo é o banco (97.9% de CPU) e a API usa 5.5%; precisa ser medida na integração |
 | 01+…+05 | Integração 01 a 04 com o log sem o corpo | as fontes de 01 a 05 | aplicada sem ganho | 01 a 04: 101.67 req/s, p95 482.8 ms | 98.90 req/s, p95 566.8 ms | `resultados/20261114-1743*`, `-1744*`, `-1746*` `-01-a-05-integracao` | Refutada: a CPU da API não caiu (44.1% → 45.4%); o log não é o custo da API. Mudança desfeita na `integracao` |
 | 06 | `vendas-por-dia` somando no banco, sem trazer `observacoes` | [PostgreSQL 16, Aggregate Functions](https://www.postgresql.org/docs/16/tutorial-agg.html) | aplicada sem ganho | 4.78 req/s, p95 14401.8 ms | 4.49 req/s, p95 15030.4 ms | `resultados/20261114-1715*`, `-1716*`, `-1718*` `-06-vendas-por-dia-sql` | Sem ganho sozinha: a CPU da API caiu de 5.8% para 2.0%, mas o gargalo é o banco (98.3%), que passou a fazer a soma; precisa ser medida na integração |
+| 01+…+04+06 | Integração 01 a 04 com `vendas-por-dia` somando no banco | as fontes de 01 a 04 e 06 | aplicada e medida | 01 a 04: 101.67 req/s, p95 482.8 ms | 110.23 req/s, p95 497.8 ms | `resultados/20261114-1749*`, `-1751*`, `-1752*` `-01-a-04-06-integracao` | Confirmada em parte: a CPU da API caiu de 44.1% para 5.6% e a vazão subiu, mas o p95 subiu um pouco; o banco voltou ao limite (99.2%) e a cauda é `pedidos-por-status` |
 
 ---
 
@@ -888,4 +889,44 @@ Na integração 01 a 04, a CPU da API está no limite (44.1% de média, máximas
 
 ### Resultado
 
-Ainda não medido.
+Medido em 2026-11-14 no commit `fd4732b`, banco recriado do zero, contrato mantido nas 3 execuções. Cada valor é a mediana (o valor do meio) das 3 execuções, tirado dos `resumo.txt` e `recursos.txt` das pastas:
+
+- Antes (01 a 04): `resultados/20261114-173736-01-a-04-integracao`, `20261114-173854-01-a-04-integracao`, `20261114-174013-01-a-04-integracao`
+- Depois (01 a 04 + 06): `resultados/20261114-174941-01-a-04-06-integracao`, `20261114-175100-01-a-04-06-integracao`, `20261114-175218-01-a-04-06-integracao`
+
+**Geral**
+
+| Métrica | 01 a 04 | 01 a 04 + 06 |
+|---|---|---|
+| Requisições em 60 s | 6142 | 6661 |
+| Requisições/s | 101.67 | 110.23 |
+| Tempo de resposta, mediana | 181.6 ms | 105.1 ms |
+| Tempo de resposta, p95 | 482.8 ms | 497.8 ms |
+| Tempo de resposta, p99 | 695.0 ms | 1005.7 ms |
+| Erros | 0.00% | 0.00% |
+| CPU média do banco | 83.7% | 99.2% |
+| Memória máxima do banco (limite 512 MiB) | 251.6 MiB | 272.4 MiB |
+| CPU média da API (limite 50%) | 44.1% | 5.6% |
+| Memória máxima da API (limite 256 MiB) | 48.7 MiB | 29.1 MiB |
+
+**Por rota** (mediana / p95, em ms)
+
+| Rota | 01 a 04 | 01 a 04 + 06 |
+|---|---|---|
+| `cliente` | 100.2 / 299.2 | 94.9 / 193.0 |
+| `cliente-por-email` | 101.7 / 313.4 | 95.6 / 194.0 |
+| `pedidos-do-cliente` | 192.7 / 423.3 | 119.1 / 294.1 |
+| `pedidos-por-status` | 299.4 / 682.6 | 305.7 / 1097.3 |
+| `busca-produtos` | 181.9 / 364.2 | 188.7 / 295.6 |
+| `vendas-por-dia` | 305.5 / 607.2 | 307.4 / 692.5 |
+| `top-produtos` | 102.7 / 301.6 | 94.5 / 193.8 |
+
+### Conclusão
+
+Pelo critério definido antes de medir, a hipótese foi **confirmada só em parte**: contra a integração 01 a 04, a mediana de requisições/s subiu (101.67 → 110.23; de 101.23 a 102.25 antes e de 108.16 a 112.03 depois, sem sobreposição), mas a de p95 geral subiu um pouco (482.8 → 497.8 ms; de 479.3 a 484.1 ms antes e de 496.7 a 499.4 ms depois, sem sobreposição). O critério exigia as duas coisas.
+
+- **A CPU da API caiu de 44.1% para 5.6%** (de 5.4% a 5.9% nas 3 execuções, com máximas de 7.8% a 9.5%), atendendo mais requisições por segundo. A memória máxima da API caiu de 48.7 para 29.1 MiB. Era a soma de `vendas-por-dia` em JavaScript que ocupava a API, não o log (seção 01+…+05). Isso explica o resultado da integração 01 a 04: a API estava no limite por causa dessa rota, que é só 8% das requisições.
+- **O gargalo voltou para o banco**, que foi de 83.7% para 99.2% de CPU. Com a API livre, as requisições chegam mais rápido ao banco, e o que ele faz por requisição passou a decidir a vazão.
+- **A cauda agora é `pedidos-por-status`.** Ela foi a única rota cujo p95 subiu muito (682.6 → 1097.3 ms) e passou a ter de 31.5% a 34.9% do tempo de espera dos usuários virtuais ([diagnostico/14](diagnostico/14-tempo-por-rota.txt), parte nova). É ela que puxa o p95 e o p99 gerais para cima. As outras rotas melhoraram ou ficaram iguais na mediana, e todas, menos `pedidos-por-status` e `vendas-por-dia`, tiveram p95 menor.
+- **Decisão:** apesar do p95 geral um pouco maior, a mudança **fica na branch `integracao`**. Ela reduziu a CPU média da API de 44.1% para 5.6%, aumentou a vazão e a mediana geral caiu de 181.6 para 105.1 ms; e o que subiu o p95 é a rota que as hipóteses 07 e 08 atacam. Essa decisão é discutível pelo critério escrito antes de medir, e fica registrada aqui para revisão.
+- **Custo:** nenhum serviço novo e nenhum limite alterado. O banco passou a usar quase toda a sua CPU (99.2%). A API passou a usar pouco do 0,5 CPU que tem; numa próxima rodada, o limite de CPU da API poderia ser reduzido para economizar recurso (não testado).

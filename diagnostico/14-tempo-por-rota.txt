@@ -77,3 +77,35 @@ cliente-por-email      917      119.7           9.1%
 top-produtos           106      130.0           1.1%
 
 Sem o N+1, o tempo de espera ficou espalhado entre as rotas; pedidos-por-status passou a ser a maior parte.
+
+## Mesma conta na integração 01 a 04 + 06 (adicionado em 2026-11-14, depois da medição 01-a-04-06-integracao)
+
+resultados/20261114-174941-01-a-04-06-integracao
+rota                   req    media_ms   parte_do_tempo
+pedidos-por-status     984      385.4          31.5%
+vendas-por-dia         524      430.3          18.7%
+pedidos-do-cliente    1441      151.0          18.1%
+busca-produtos         993      158.4          13.1%
+cliente               1707       77.5          11.0%
+cliente-por-email     1012       81.6           6.9%
+top-produtos           110       74.7           0.7%
+
+resultados/20261114-175100-01-a-04-06-integracao
+rota                   req    media_ms   parte_do_tempo
+pedidos-por-status     947      441.5          34.8%
+pedidos-do-cliente    1386      156.7          18.1%
+vendas-por-dia         510      362.5          15.4%
+busca-produtos         955      169.6          13.5%
+cliente               1652       80.2          11.0%
+cliente-por-email      965       82.5           6.6%
+top-produtos           109       77.8           0.7%
+
+resultados/20261114-175218-01-a-04-06-integracao
+rota                   req    media_ms   parte_do_tempo
+pedidos-por-status     968      433.6          34.9%
+pedidos-do-cliente    1399      153.1          17.8%
+vendas-por-dia         520      369.3          16.0%
+busca-produtos         982      154.4          12.6%
+cliente               1686       80.2          11.2%
+cliente-por-email      994       81.4           6.7%
+top-produtos           112       78.1           0.7%
