@@ -17,6 +17,7 @@ Coletado em 2026-11-09 sobre o commit `c959835` (aplicação sem mudanças). Cad
 | [16-log-sem-corpo.txt](16-log-sem-corpo.txt) | Bytes de log por requisição antes e depois de tirar o corpo da resposta do log de acesso (hipótese 05) |
 | [17-vendas-por-dia-soma-no-banco.txt](17-vendas-por-dia-soma-no-banco.txt) | Linhas enviadas à API, `EXPLAIN` antes e depois da soma por dia no banco e comparação com a lógica antiga (hipótese 06) |
 | [18-status-indice-cobertura.txt](18-status-indice-cobertura.txt) | `EXPLAIN` da página e da contagem de `/pedidos?status=` antes e depois do índice de cobertura, tamanho do índice e comparação com a consulta antiga (hipótese 07) |
+| [19-contagem-por-status-pre-calculada.txt](19-contagem-por-status-pre-calculada.txt) | `count(*)` por status contra a leitura da visão materializada, custo do refresh e conferência dos totais (hipótese 08) |
 | [20-vendas-por-dia-na-integracao.txt](20-vendas-por-dia-na-integracao.txt) | `EXPLAIN` da consulta antiga e da nova de `vendas-por-dia` com os índices da hipótese 01 (integração da hipótese 06) |
 | [21-status-cobertura-na-integracao.txt](21-status-cobertura-na-integracao.txt) | Página funda de `/pedidos?status=` nos 4 status com o índice da hipótese 01 e com o índice de cobertura (integração da hipótese 07) |
 

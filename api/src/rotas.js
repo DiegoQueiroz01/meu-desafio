@@ -118,7 +118,12 @@ rotas.get('/pedidos', assincrono(async (req, res) => {
   const pagina = req.query.pagina === undefined ? 1 : inteiroPositivo(req.query.pagina);
   if (pagina === null) return res.status(400).json({ erro: 'pagina invalida' });
 
-  const [contagem] = await consultar('SELECT count(*) AS total FROM pedidos WHERE status = $1', [status]);
+  // Total lido da visão materializada de banco/06-contagem-status.sql, em vez de contar a tabela a cada
+  // chamada. coalesce: um status sem pedidos não tem linha na visão e continua devolvendo total 0.
+  const [contagem] = await consultar(
+    'SELECT coalesce((SELECT total FROM contagem_pedidos_status WHERE status = $1), 0) AS total',
+    [status],
+  );
   const linhas = await consultar(
     // Só as colunas da resposta: todas estão no índice de banco/05-indice-status-cobertura.sql,
     // então o OFFSET pula linhas lendo só o índice (Index Only Scan).

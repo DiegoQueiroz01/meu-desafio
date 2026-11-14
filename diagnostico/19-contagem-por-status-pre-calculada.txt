@@ -1,0 +1,129 @@
+# Hipótese 08 — total de pedidos por status pré-calculado
+# Coletado em 2026-11-14 na branch hipotese/contagem-status, sobre a aplicação original
+# (sem os índices da hipótese 01, sem pool, sem a visão de top-produtos), banco recriado do zero.
+# "Depois" = banco/06-contagem-status.sql aplicado no mesmo banco com psql, antes de recriar do zero.
+
+## 1. Pedidos por status nos dados
+  status   | count
+-----------+--------
+ cancelado |  50000
+ entregue  | 125000
+ pago      | 300000
+ pendente  |  25000
+
+## 2. count(*) antes (consulta original), status 'pago'
+                                                               QUERY PLAN                                                                 
+-------------------------------------------------------------------------------------------------------------------------------------------
+Finalize Aggregate  (cost=24753.05..24753.06 rows=1 width=8) (actual time=26.320..27.791 rows=1 loops=1)
+  Buffers: shared read=20834
+  ->  Gather  (cost=24752.84..24753.05 rows=2 width=8) (actual time=26.264..27.787 rows=3 loops=1)
+        Workers Planned: 2
+        Workers Launched: 2
+        Buffers: shared read=20834
+        ->  Partial Aggregate  (cost=23752.84..23752.85 rows=1 width=8) (actual time=24.293..24.293 rows=1 loops=3)
+              Buffers: shared read=20834
+              ->  Parallel Seq Scan on pedidos  (cost=0.00..23438.17 rows=125868 width=0) (actual time=0.015..20.738 rows=100000 loops=3)
+                    Filter: (status = 'pago'::text)
+                    Rows Removed by Filter: 66667
+                    Buffers: shared read=20834
+Planning:
+  Buffers: shared hit=44 read=22 dirtied=1
+Planning Time: 0.933 ms
+Execution Time: 27.860 ms
+(16 rows)
+
+## 3. count(*) antes, status 'pendente'
+                                                              QUERY PLAN                                                               
+----------------------------------------------------------------------------------------------------------------------------------------
+Finalize Aggregate  (cost=24465.50..24465.51 rows=1 width=8) (actual time=19.997..21.495 rows=1 loops=1)
+  Buffers: shared hit=96 read=20738
+  ->  Gather  (cost=24465.28..24465.49 rows=2 width=8) (actual time=19.948..21.491 rows=3 loops=1)
+        Workers Planned: 2
+        Workers Launched: 2
+        Buffers: shared hit=96 read=20738
+        ->  Partial Aggregate  (cost=23465.28..23465.29 rows=1 width=8) (actual time=18.475..18.476 rows=1 loops=3)
+              Buffers: shared hit=96 read=20738
+              ->  Parallel Seq Scan on pedidos  (cost=0.00..23438.17 rows=10847 width=0) (actual time=0.019..17.907 rows=8333 loops=3)
+                    Filter: (status = 'pendente'::text)
+                    Rows Removed by Filter: 158333
+                    Buffers: shared hit=96 read=20738
+Planning:
+  Buffers: shared hit=66
+Planning Time: 0.164 ms
+Execution Time: 21.556 ms
+(16 rows)
+
+## 4. Total lido da visão, depois, status 'pago'
+                                                      QUERY PLAN                                                        
+-------------------------------------------------------------------------------------------------------------------------
+Result  (cost=1.05..1.06 rows=1 width=8) (actual time=0.012..0.012 rows=1 loops=1)
+  Buffers: shared hit=1
+  InitPlan 1 (returns $0)
+    ->  Seq Scan on contagem_pedidos_status  (cost=0.00..1.05 rows=1 width=8) (actual time=0.009..0.010 rows=1 loops=1)
+          Filter: (status = 'pago'::text)
+          Rows Removed by Filter: 3
+          Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=69 read=1
+Planning Time: 0.247 ms
+Execution Time: 0.026 ms
+(11 rows)
+
+## 5. Total lido da visão, depois, status 'pendente'
+                                                      QUERY PLAN                                                        
+-------------------------------------------------------------------------------------------------------------------------
+Result  (cost=1.05..1.06 rows=1 width=8) (actual time=0.010..0.011 rows=1 loops=1)
+  Buffers: shared hit=1
+  InitPlan 1 (returns $0)
+    ->  Seq Scan on contagem_pedidos_status  (cost=0.00..1.05 rows=1 width=8) (actual time=0.008..0.009 rows=1 loops=1)
+          Filter: (status = 'pendente'::text)
+          Rows Removed by Filter: 3
+          Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=70
+Planning Time: 0.209 ms
+Execution Time: 0.024 ms
+(11 rows)
+
+## 6. Custo de atualizar a visão, tamanho e conteúdo (psql com 	iming)
+Timing is on.
+REFRESH MATERIALIZED VIEW
+Time: 83.626 ms
+REFRESH MATERIALIZED VIEW
+Time: 97.318 ms
+ visao_com_indice 
+------------------
+ 40 kB
+(1 row)
+
+Time: 0.618 ms
+  status   | total  
+-----------+--------
+ cancelado |  50000
+ entregue  | 125000
+ pago      | 300000
+ pendente  |  25000
+(4 rows)
+
+Time: 0.050 ms
+
+## 7. Status sem linha na visão: coalesce devolve 0, do mesmo tipo (bigint) do count(*) original
+ total |  tipo  
+-------+--------
+     0 | bigint
+(1 row)
+
+ tipo_do_count_original 
+------------------------
+ bigint
+(1 row)
+
+## 8. Mesma resposta
+Total devolvido pela API (página 3 de cada status) comparado com count(*) direto na tabela:
+pago api=300000 count=300000
+entregue api=125000 count=125000
+cancelado api=50000 count=50000
+pendente api=25000 count=25000
+Contrato mantido: as 42 respostas são iguais às gravadas.
+
+Estes tempos são de uma consulta por vez, sem carga: não são o resultado do experimento.
