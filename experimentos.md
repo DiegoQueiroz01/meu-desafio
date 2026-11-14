@@ -18,6 +18,7 @@ Cada ideia testada vira uma linha na tabela e uma seção abaixo. Os números de
 | 07 | Índice de cobertura (`INCLUDE`) para a página de `/pedidos?status=` | [PostgreSQL 16, CREATE INDEX](https://www.postgresql.org/docs/16/sql-createindex.html) | aplicada e medida | 4.78 req/s, p95 14401.8 ms | 5.31 req/s, p95 14592.6 ms | `resultados/20261114-1723*`, `-1724*`, `-1726*` `-07-status-indice-cobertura` | Não confirmada sozinha: req/s subiu e `pedidos-por-status` caiu de 4598.7 para 704.3 ms de mediana, mas o p95 geral não caiu (preso em `pedidos-do-cliente` e `top-produtos`) |
 | 01+…+04+06+07 | Integração 01 a 04 + 06 com o índice de cobertura por status | as fontes de 01 a 04, 06 e 07 | aplicada e medida | 01 a 04 + 06: 110.23 req/s, p95 497.8 ms | 161.25 req/s, p95 482.9 ms | `resultados/20261114-1756*`, `-1757*`, `-1758*` `-01-a-04-06-07-integracao` | Confirmada: maior aumento de vazão da rodada; `pedidos-por-status` caiu de 305.7 para 109.0 ms de mediana; agora `vendas-por-dia` concentra o tempo |
 | 08 | Total de pedidos por status pré-calculado numa visão materializada | [PostgreSQL Wiki, Slow Counting](https://wiki.postgresql.org/wiki/Slow_Counting) | aplicada e medida | 4.78 req/s, p95 14401.8 ms | 4.92 req/s, p95 14292.9 ms | `resultados/20261114-1730*`, `-1732*`, `-1733*` `-08-contagem-status` | Confirmada só pelas medianas, dentro da variação: `pedidos-por-status` caiu de 4598.7 para 2455.8 ms de mediana, mas o ganho geral não se separa do ruído |
+| 01+…+04+06+07+08 | Integração 01 a 04 + 06 + 07 com o total por status pré-calculado | as fontes de 01 a 04 e 06 a 08 | aplicada e medida | 01 a 04 + 06 + 07: 161.25 req/s, p95 482.9 ms | 203.17 req/s, p95 291.1 ms | `resultados/20261114-1801*`, `-1803*`, `-1804*` `-01-a-04-06-a-08-integracao` | Confirmada: p99 caiu de 1010.5 para 304.4 ms; o banco segue no limite (98.4%) e o tempo ficou espalhado entre `busca-produtos`, `vendas-por-dia` e `pedidos-do-cliente` |
 
 ---
 
@@ -1196,4 +1197,44 @@ Na integração 01 a 04 + 06 + 07, o banco está no limite (98.4% de CPU). Com o
 
 ### Resultado
 
-Ainda não medido.
+Medido em 2026-11-14 no commit `bb0ea5c`, banco recriado do zero, contrato mantido nas 3 execuções. Cada valor é a mediana (o valor do meio) das 3 execuções, tirado dos `resumo.txt` e `recursos.txt` das pastas:
+
+- Antes (01 a 04 + 06 + 07): `resultados/20261114-175616-01-a-04-06-07-integracao`, `20261114-175733-01-a-04-06-07-integracao`, `20261114-175851-01-a-04-06-07-integracao`
+- Depois (01 a 04 + 06 a 08): `resultados/20261114-180151-01-a-04-06-a-08-integracao`, `20261114-180308-01-a-04-06-a-08-integracao`, `20261114-180425-01-a-04-06-a-08-integracao`
+
+**Geral**
+
+| Métrica | 01 a 04 + 06 + 07 | 01 a 04 + 06 a 08 |
+|---|---|---|
+| Requisições em 60 s | 9720 | 12216 |
+| Requisições/s | 161.25 | 203.17 |
+| Tempo de resposta, mediana | 88.3 ms | 96.6 ms |
+| Tempo de resposta, p95 | 482.9 ms | 291.1 ms |
+| Tempo de resposta, p99 | 1010.5 ms | 304.4 ms |
+| Erros | 0.00% | 0.00% |
+| CPU média do banco | 98.4% | 98.4% |
+| Memória máxima do banco (limite 512 MiB) | 225.3 MiB | 210.7 MiB |
+| CPU média da API (limite 50%) | 6.6% | 8.5% |
+| Memória máxima da API (limite 256 MiB) | 31.4 MiB | 29.5 MiB |
+
+**Por rota** (mediana / p95, em ms)
+
+| Rota | 01 a 04 + 06 + 07 | 01 a 04 + 06 a 08 |
+|---|---|---|
+| `cliente` | 36.9 / 104.7 | 8.6 / 99.2 |
+| `cliente-por-email` | 34.4 / 103.8 | 88.6 / 99.8 |
+| `pedidos-do-cliente` | 100.1 / 198.1 | 98.0 / 194.7 |
+| `pedidos-por-status` | 109.0 / 225.4 | 98.2 / 195.1 |
+| `busca-produtos` | 84.0 / 156.7 | 191.3 / 209.4 |
+| `vendas-por-dia` | 550.8 / 1226.2 | 292.2 / 394.2 |
+| `top-produtos` | 30.6 / 117.6 | 89.6 / 99.6 |
+
+### Conclusão
+
+Pelo critério definido antes de medir, a hipótese foi **confirmada**: contra a integração 01 a 04 + 06 + 07, a mediana de requisições/s subiu (161.25 → 203.17) e a de p95 geral caiu (482.9 → 291.1 ms), com o contrato mantido. Nas 3 execuções de cada lado, os valores não se sobrepõem: requisições/s de 160.51 a 161.52 antes e de 202.36 a 204.15 depois; p95 de 480.5 a 483.9 ms antes e de 209.8 a 291.7 ms depois.
+
+- **Medida sozinha, a hipótese 08 teve ganho dentro da variação (seção 08); sobre as outras, teve o segundo maior aumento de vazão da rodada** (9720 → 12216 requisições em 60 s). Na aplicação original, a contagem era a parte barata de uma rota cara; aqui, depois do índice de cobertura, era a parte cara.
+- **A cauda caiu muito:** p99 de 1010.5 para 304.4 ms. `vendas-por-dia`, que concentrava o tempo, caiu de 550.8 para 292.2 ms de mediana e de 1226.2 para 394.2 ms de p95, sem ter mudado: ela ganhou CPU do banco que as contagens ocupavam.
+- **Algumas medianas por rota subiram** (`cliente-por-email` 34.4 → 88.6 ms, `busca-produtos` 84.0 → 191.3 ms, `top-produtos` 30.6 → 89.6 ms), enquanto os p95 dessas rotas ficaram parecidos ou caíram. As medianas desta medição ficam perto de degraus de ~100 ms (8.6, 88.6, 98.0, 98.2, 191.3, 292.2 ms). Uma explicação possível, **não testada e sem fonte aberta ainda**, é o limite de CPU do container do banco ser aplicado em janelas de tempo fixas: com o banco em 98.4% de CPU, uma consulta que não termina numa janela espera a próxima. Fica como próximo teste.
+- **O tempo de espera agora está espalhado:** `busca-produtos` (23.4% a 24.8%) e `vendas-por-dia` (21.3% a 23.5%) são as maiores partes, seguidas de `pedidos-do-cliente` (18.9% a 19.1%) ([diagnostico/14](diagnostico/14-tempo-por-rota.txt), parte nova). O banco segue no limite (98.4%) e a API com folga (8.5%).
+- **Custo:** nenhum serviço novo e nenhum limite alterado; 40 kB de disco da visão (diagnostico/19). O total por status fica defasado até o próximo refresh (83,626 ms por refresh, sem carga, na aplicação original), e numa loja real poderia não bater com a página (seção 08).

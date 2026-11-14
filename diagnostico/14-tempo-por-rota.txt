@@ -141,3 +141,35 @@ cliente               2411       50.2          10.1%
 busca-produtos        1451       74.1           8.9%
 cliente-por-email     1427       50.5           6.0%
 top-produtos           178       51.3           0.8%
+
+## Mesma conta na integração 01 a 04 + 06 a 08 (adicionado em 2026-11-14, depois da medição 01-a-04-06-a-08-integracao)
+
+resultados/20261114-180151-01-a-04-06-a-08-integracao
+rota                   req    media_ms   parte_do_tempo
+vendas-por-dia         998      282.5          23.5%
+busca-produtos        1874      149.8          23.4%
+pedidos-do-cliente    2527       90.1          19.0%
+pedidos-por-status    1784       86.5          12.9%
+cliente               3050       48.7          12.4%
+cliente-por-email     1815       52.5           7.9%
+top-produtos           223       48.1           0.9%
+
+resultados/20261114-180308-01-a-04-06-a-08-integracao
+rota                   req    media_ms   parte_do_tempo
+busca-produtos        1866      156.3          24.3%
+vendas-por-dia         989      261.1          21.5%
+pedidos-do-cliente    2500       90.6          18.9%
+pedidos-por-status    1772       92.6          13.7%
+cliente               3027       50.6          12.8%
+cliente-por-email     1787       52.4           7.8%
+top-produtos           222       55.1           1.0%
+
+resultados/20261114-180425-01-a-04-06-a-08-integracao
+rota                   req    media_ms   parte_do_tempo
+busca-produtos        1871      159.2          24.8%
+vendas-por-dia         993      257.4          21.3%
+pedidos-do-cliente    2512       91.1          19.1%
+pedidos-por-status    1782       91.1          13.5%
+cliente               3039       49.6          12.6%
+cliente-por-email     1797       51.3           7.7%
+top-produtos           222       53.4           1.0%
