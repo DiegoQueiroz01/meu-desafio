@@ -4,7 +4,7 @@ Cada ideia testada vira uma linha na tabela e uma seção abaixo. Os números de
 
 | # | Ideia | Fonte | Status | Antes | Depois | Pastas | Conclusão |
 |---|---|---|---|---|---|---|---|
-| 04 | `/clientes/:id/pedidos` com uma consulta, sem N+1 | [Chen et al., ICSE 2014](https://ece.uwaterloo.ca/~wshang/pubs/peter_icse2014.pdf) | em medição | | | | |
+| 04 | `/clientes/:id/pedidos` com uma consulta, sem N+1 | [Chen et al., ICSE 2014](https://ece.uwaterloo.ca/~wshang/pubs/peter_icse2014.pdf) | aplicada e medida | 4.78 req/s, p95 14401.8 ms | 7.98 req/s, p95 6472.4 ms | `resultados/20261114-1659*`, `-1700*`, `-1702*` `-04-pedidos-do-cliente` | Confirmada: `pedidos-do-cliente` caiu de 12177.9 para 4366.1 ms de mediana; o banco segue em 94.1% de CPU, preso nas outras leituras de tabela inteira |
 
 ---
 
@@ -71,4 +71,44 @@ Esses tempos não são o resultado do experimento: o resultado sob carga vem do 
 
 ### Resultado
 
-Ainda não medido.
+Medido em 2026-11-14 no commit `243f623`, banco recriado do zero, contrato mantido nas 3 execuções. Cada valor é a mediana (o valor do meio) das 3 execuções, tirado dos `resumo.txt` e `recursos.txt` das pastas:
+
+- Antes: `resultados/20261104-094609-00-linha-de-base`, `20261104-095227-00-linha-de-base`, `20261104-095420-00-linha-de-base`
+- Depois: `resultados/20261114-165932-04-pedidos-do-cliente`, `20261114-170058-04-pedidos-do-cliente`, `20261114-170227-04-pedidos-do-cliente`
+
+**Geral**
+
+| Métrica | Antes | Depois |
+|---|---|---|
+| Requisições em 60 s | 308 | 511 |
+| Requisições/s | 4.78 | 7.98 |
+| Tempo de resposta, mediana | 800.1 ms | 686.0 ms |
+| Tempo de resposta, p95 | 14401.8 ms | 6472.4 ms |
+| Tempo de resposta, p99 | 16990.0 ms | 13487.7 ms |
+| Erros | 0.00% | 0.00% |
+| CPU média do banco | 99.8% | 94.1% |
+| Memória máxima do banco (limite 512 MiB) | 283.6 MiB | 330.7 MiB |
+| CPU média da API | 5.8% | 6.2% |
+| Memória máxima da API (limite 256 MiB) | 40.5 MiB | 47.2 MiB |
+
+**Por rota** (mediana / p95, em ms)
+
+| Rota | Antes | Depois |
+|---|---|---|
+| `cliente` | 203.2 / 497.8 | 197.5 / 394.7 |
+| `cliente-por-email` | 799.5 / 1401.1 | 611.7 / 1195.9 |
+| `pedidos-do-cliente` | 12177.9 / 16231.5 | 4366.1 / 6306.9 |
+| `pedidos-por-status` | 4598.7 / 14459.8 | 5440.9 / 15617.5 |
+| `busca-produtos` | 494.1 / 732.6 | 301.0 / 613.5 |
+| `vendas-por-dia` | 4614.2 / 6529.3 | 4618.1 / 6876.5 |
+| `top-produtos` | 9902.8 / 15539.6 | 8896.7 / 10945.5 |
+
+### Conclusão
+
+Pelo critério definido antes de medir, a hipótese foi **confirmada**: a mediana de requisições/s subiu (4.78 → 7.98) e a de p95 geral caiu (14401.8 → 6472.4 ms), com o contrato mantido. Nas 3 execuções de cada lado, os valores não se sobrepõem: requisições/s de 4.71 a 4.79 antes e de 7.68 a 8.24 depois; p95 de 14260.1 a 15731.8 ms antes e de 6390.9 a 7251.5 ms depois.
+
+- **A rota mudou muito.** A mediana de `pedidos-do-cliente` caiu de 12177.9 para 4366.1 ms. Sem índices, a `itens_pedido` passou a ser lida uma vez por requisição, em vez de uma vez por pedido.
+- **É o maior ganho isolado até aqui sobre a aplicação original** (01 sozinha levou a 19.73 req/s, mas 02 a 5.51 e 03 a 5.05). Como `pedidos-do-cliente` é 20% da carga e era a rota mais cara, sobrou CPU do banco para as outras rotas: `cliente-por-email` e `busca-produtos` também melhoraram.
+- **`pedidos-por-status` e `vendas-por-dia` não melhoraram** (mediana 4598.7 → 5440.9 ms e 4614.2 → 4618.1 ms). O banco continua perto do limite (94.1% de CPU) e essas rotas continuam lendo e ordenando tabelas inteiras; com mais requisições por segundo, disputam a CPU com mais requisições das outras rotas. São poucas amostras por execução (72 e 35), então a diferença pode ser variação.
+- **Custo:** nenhum serviço novo, nenhum limite e nenhum índice alterado. A memória máxima do banco subiu de 283.6 para 330.7 MiB; uma explicação provável, não testada, é a consulta nova usar `Parallel Hash` com mais processos ao mesmo tempo (diagnostico/15).
+- **Limites:** medido sozinho, sobre a aplicação original. A mudança precisa ser medida na branch `integracao`, onde as consultas já são baratas e o custo que sobra é o das idas e voltas.
