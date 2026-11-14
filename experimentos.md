@@ -10,6 +10,7 @@ Cada ideia testada vira uma linha na tabela e uma seção abaixo. Os números de
 | 03 | `top-produtos` pré-calculado numa visão materializada | [PostgreSQL 16, Materialized Views](https://www.postgresql.org/docs/16/rules-materializedviews.html) | aplicada e medida | 4.78 req/s, p95 14401.8 ms | 5.05 req/s, p95 14096.8 ms | `resultados/20261111-1556*`, `-1557*`, `-1559*` `-03-top-produtos` | Confirmada com ganho geral pequeno: a rota caiu de 9902.8 para 251.9 ms de mediana, mas as outras seguem presas em `Seq Scan` |
 | 01+02+03 | Índices, pool e `top-produtos` pré-calculado juntos | as fontes de 01, 02 e 03 | aplicada e medida | 01+02: 36.47 req/s, p95 2467.9 ms | 98.09 req/s, p95 788.6 ms | `resultados/20261111-1620*`, `-1622*`, `-1623*` `-01-02-03-indices-pool-top` | Confirmada: todas as rotas melhoraram; o banco saiu do limite (84.9% de CPU) e a API chegou perto do seu (46.7% de 50%) |
 | 04 | `/clientes/:id/pedidos` com uma consulta, sem N+1 | [Chen et al., ICSE 2014](https://ece.uwaterloo.ca/~wshang/pubs/peter_icse2014.pdf) | aplicada e medida | 4.78 req/s, p95 14401.8 ms | 7.98 req/s, p95 6472.4 ms | `resultados/20261114-1659*`, `-1700*`, `-1702*` `-04-pedidos-do-cliente` | Confirmada: `pedidos-do-cliente` caiu de 12177.9 para 4366.1 ms de mediana; o banco segue em 94.1% de CPU, preso nas outras leituras de tabela inteira |
+| 01+…+04 | Integração 01+02+03 com `pedidos-do-cliente` sem N+1 | as fontes de 01 a 04 | aplicada e medida | 01+02+03: 98.09 req/s, p95 788.6 ms | 101.67 req/s, p95 482.8 ms | `resultados/20261114-1737*`, `-1738*`, `-1740*` `-01-a-04-integracao` | Confirmada: p95 caiu de 788.6 para 482.8 ms, mas a vazão subiu pouco e as rotas rápidas pioraram; a CPU da API (44.1%, máx. 53.5%) passou a limitar |
 
 ---
 
@@ -563,4 +564,44 @@ Na integração 01+02+03, `/clientes/:id/pedidos` ficou com 57.9% a 60.0% do tem
 
 ### Resultado
 
-Ainda não medido.
+Medido em 2026-11-14 no commit `6890de6`, banco recriado do zero, contrato mantido nas 3 execuções. Cada valor é a mediana (o valor do meio) das 3 execuções, tirado dos `resumo.txt` e `recursos.txt` das pastas:
+
+- Antes (01+02+03): `resultados/20261111-162052-01-02-03-indices-pool-top`, `20261111-162210-01-02-03-indices-pool-top`, `20261111-162329-01-02-03-indices-pool-top`
+- Depois (01+02+03+04): `resultados/20261114-173736-01-a-04-integracao`, `20261114-173854-01-a-04-integracao`, `20261114-174013-01-a-04-integracao`
+
+**Geral**
+
+| Métrica | 01+02+03 | 01+02+03+04 |
+|---|---|---|
+| Requisições em 60 s | 5925 | 6142 |
+| Requisições/s | 98.09 | 101.67 |
+| Tempo de resposta, mediana | 105.7 ms | 181.6 ms |
+| Tempo de resposta, p95 | 788.6 ms | 482.8 ms |
+| Tempo de resposta, p99 | 1134.0 ms | 695.0 ms |
+| Erros | 0.00% | 0.00% |
+| CPU média do banco | 84.9% | 83.7% |
+| Memória máxima do banco (limite 512 MiB) | 240.0 MiB | 251.6 MiB |
+| CPU média da API (limite 50%) | 46.7% | 44.1% |
+| Memória máxima da API (limite 256 MiB) | 45.0 MiB | 48.7 MiB |
+
+**Por rota** (mediana / p95, em ms)
+
+| Rota | 01+02+03 | 01+02+03+04 |
+|---|---|---|
+| `cliente` | 12.5 / 190.3 | 100.2 / 299.2 |
+| `cliente-por-email` | 13.4 / 189.3 | 101.7 / 313.4 |
+| `pedidos-do-cliente` | 532.7 / 1106.2 | 192.7 / 423.3 |
+| `pedidos-por-status` | 190.0 / 459.4 | 299.4 / 682.6 |
+| `busca-produtos` | 97.9 / 213.1 | 181.9 / 364.2 |
+| `vendas-por-dia` | 204.0 / 408.8 | 305.5 / 607.2 |
+| `top-produtos` | 14.1 / 181.7 | 102.7 / 301.6 |
+
+### Conclusão
+
+Pelo critério definido antes de medir, a hipótese foi **confirmada**: contra a integração 01+02+03, a mediana de requisições/s subiu (98.09 → 101.67) e a de p95 geral caiu (788.6 → 482.8 ms), com o contrato mantido. Nas 3 execuções de cada lado, os valores não se sobrepõem: requisições/s de 93.89 a 99.39 antes e de 101.23 a 102.25 depois; p95 de 782.6 a 800.0 ms antes e de 479.3 a 484.1 ms depois.
+
+- **A cauda caiu, a vazão quase não subiu.** `pedidos-do-cliente` caiu de 532.7 para 192.7 ms de mediana, o p95 geral caiu de 788.6 para 482.8 ms e o p99, de 1134.0 para 695.0 ms. Mas as requisições/s subiram só de 98.09 para 101.67, bem menos do que a parte do tempo que essa rota ocupava (57.9% a 60.0%, diagnostico/14) faria esperar.
+- **O tempo foi redistribuído entre as rotas.** As rotas rápidas pioraram: `cliente` foi de 12.5 para 100.2 ms de mediana, e a mediana geral subiu de 105.7 para 181.6 ms. Sem o N+1, o tempo de espera ficou espalhado: `pedidos-por-status` passou a ser a maior parte (24.8% a 25.6%), seguida de `pedidos-do-cliente` (21.8% a 22.1%) (diagnostico/14, parte nova).
+- **Explicação provável: o limite agora é a CPU da API.** A CPU média da API ficou em 44.1% (44.0% a 48.0%), com máximas de 51.4% a 53.5% nas amostras, no limite de 0,5 CPU. O banco ficou com folga (83.7%). Com a API sem CPU sobrando, liberar tempo numa rota não aumenta muito a vazão: as outras requisições passam a esperar a API. Isso ainda é uma explicação, não medida diretamente; as hipóteses 05 e 06 tiram trabalho da API e vão testá-la.
+- **Custo:** nenhum serviço novo, nenhum limite e nenhum índice alterado. Memória máxima da API 48.7 MiB (antes 45.0) e do banco 251.6 MiB (antes 240.0).
+- **Limites:** o ganho em vazão é pequeno, mas fora da variação; a queda de p95 e p99 é maior. A piora da mediana geral e das rotas rápidas é real (faixas sem sobreposição: mediana geral de 181.4 a 181.8 ms, contra 104.6 a 109.6 ms antes).

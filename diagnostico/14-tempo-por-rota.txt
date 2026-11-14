@@ -43,3 +43,37 @@ Nas 3 execuções, /clientes/:id/pedidos fica com mais da metade do tempo de esp
 requisições. Pelo diagnostico/12, quase nada desse tempo é trabalho do banco (o N+1 todo soma menos de 2% do tempo
 do banco): o tempo está nas idas e voltas entre a API e o banco (em média 22 comandos SQL por requisição,
 diagnostico/15) e na espera por conexão do pool e pela CPU da API.
+
+## Mesma conta na integração 01+02+03+04 (adicionado em 2026-11-14, depois da medição 01-a-04-integracao)
+
+resultados/20261114-173736-01-a-04-integracao
+rota                   req    media_ms   parte_do_tempo
+pedidos-por-status     888      335.2          24.8%
+pedidos-do-cliente    1302      200.8          21.8%
+cliente               1558      121.3          15.7%
+vendas-por-dia         473      341.3          13.4%
+busca-produtos         907      173.2          13.1%
+cliente-por-email      915      133.9          10.2%
+top-produtos           107      115.4           1.0%
+
+resultados/20261114-173854-01-a-04-integracao
+rota                   req    media_ms   parte_do_tempo
+pedidos-por-status     890      346.2          25.6%
+pedidos-do-cliente    1305      203.7          22.1%
+cliente               1554      119.5          15.4%
+busca-produtos         906      181.7          13.7%
+vendas-por-dia         467      337.9          13.1%
+cliente-por-email      913      120.2           9.1%
+top-produtos           107      120.2           1.1%
+
+resultados/20261114-174013-01-a-04-integracao
+rota                   req    media_ms   parte_do_tempo
+pedidos-por-status     883      351.0          25.7%
+pedidos-do-cliente    1295      200.3          21.5%
+cliente               1549      121.1          15.6%
+busca-produtos         906      182.2          13.7%
+vendas-por-dia         473      334.6          13.1%
+cliente-por-email      917      119.7           9.1%
+top-produtos           106      130.0           1.1%
+
+Sem o N+1, o tempo de espera ficou espalhado entre as rotas; pedidos-por-status passou a ser a maior parte.
