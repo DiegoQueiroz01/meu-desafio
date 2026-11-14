@@ -9,6 +9,7 @@ Coletado em 2026-11-09 sobre o commit `c959835` (aplicação sem mudanças). Cad
 | [01-banco-ambiente.txt](01-banco-ambiente.txt) | Versão, tamanho das tabelas, índices existentes e parâmetros do PostgreSQL |
 | [02 a 08-explain-*.txt](.) | `EXPLAIN (ANALYZE, BUFFERS)` da consulta de cada rota, com parâmetros no formato que o teste de carga usa |
 | [09-conexoes-por-requisicao.txt](09-conexoes-por-requisicao.txt) | Tempo de cada rota sem carga e quantas conexões ao banco cada requisição abre |
+| [15-pedidos-do-cliente-uma-consulta.txt](15-pedidos-do-cliente-uma-consulta.txt) | Comandos SQL por requisição de `/clientes/:id/pedidos` antes e depois da consulta única, comparação com a lógica antiga e `EXPLAIN` (hipótese 04) |
 
 ## O que as evidências mostram
 
