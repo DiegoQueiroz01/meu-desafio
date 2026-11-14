@@ -16,6 +16,7 @@ Cada ideia testada vira uma linha na tabela e uma seção abaixo. Os números de
 | 06 | `vendas-por-dia` somando no banco, sem trazer `observacoes` | [PostgreSQL 16, Aggregate Functions](https://www.postgresql.org/docs/16/tutorial-agg.html) | aplicada sem ganho | 4.78 req/s, p95 14401.8 ms | 4.49 req/s, p95 15030.4 ms | `resultados/20261114-1715*`, `-1716*`, `-1718*` `-06-vendas-por-dia-sql` | Sem ganho sozinha: a CPU da API caiu de 5.8% para 2.0%, mas o gargalo é o banco (98.3%), que passou a fazer a soma; precisa ser medida na integração |
 | 01+…+04+06 | Integração 01 a 04 com `vendas-por-dia` somando no banco | as fontes de 01 a 04 e 06 | aplicada e medida | 01 a 04: 101.67 req/s, p95 482.8 ms | 110.23 req/s, p95 497.8 ms | `resultados/20261114-1749*`, `-1751*`, `-1752*` `-01-a-04-06-integracao` | Confirmada em parte: a CPU da API caiu de 44.1% para 5.6% e a vazão subiu, mas o p95 subiu um pouco; o banco voltou ao limite (99.2%) e a cauda é `pedidos-por-status` |
 | 07 | Índice de cobertura (`INCLUDE`) para a página de `/pedidos?status=` | [PostgreSQL 16, CREATE INDEX](https://www.postgresql.org/docs/16/sql-createindex.html) | aplicada e medida | 4.78 req/s, p95 14401.8 ms | 5.31 req/s, p95 14592.6 ms | `resultados/20261114-1723*`, `-1724*`, `-1726*` `-07-status-indice-cobertura` | Não confirmada sozinha: req/s subiu e `pedidos-por-status` caiu de 4598.7 para 704.3 ms de mediana, mas o p95 geral não caiu (preso em `pedidos-do-cliente` e `top-produtos`) |
+| 01+…+04+06+07 | Integração 01 a 04 + 06 com o índice de cobertura por status | as fontes de 01 a 04, 06 e 07 | aplicada e medida | 01 a 04 + 06: 110.23 req/s, p95 497.8 ms | 161.25 req/s, p95 482.9 ms | `resultados/20261114-1756*`, `-1757*`, `-1758*` `-01-a-04-06-07-integracao` | Confirmada: maior aumento de vazão da rodada; `pedidos-por-status` caiu de 305.7 para 109.0 ms de mediana; agora `vendas-por-dia` concentra o tempo |
 
 ---
 
@@ -1043,4 +1044,44 @@ Na integração 01 a 04 + 06, o banco voltou ao limite (99.2% de CPU) e `pedidos
 
 ### Resultado
 
-Ainda não medido.
+Medido em 2026-11-14 no commit `89254ec`, banco recriado do zero, contrato mantido nas 3 execuções. Cada valor é a mediana (o valor do meio) das 3 execuções, tirado dos `resumo.txt` e `recursos.txt` das pastas:
+
+- Antes (01 a 04 + 06): `resultados/20261114-174941-01-a-04-06-integracao`, `20261114-175100-01-a-04-06-integracao`, `20261114-175218-01-a-04-06-integracao`
+- Depois (01 a 04 + 06 + 07): `resultados/20261114-175616-01-a-04-06-07-integracao`, `20261114-175733-01-a-04-06-07-integracao`, `20261114-175851-01-a-04-06-07-integracao`
+
+**Geral**
+
+| Métrica | 01 a 04 + 06 | 01 a 04 + 06 + 07 |
+|---|---|---|
+| Requisições em 60 s | 6661 | 9720 |
+| Requisições/s | 110.23 | 161.25 |
+| Tempo de resposta, mediana | 105.1 ms | 88.3 ms |
+| Tempo de resposta, p95 | 497.8 ms | 482.9 ms |
+| Tempo de resposta, p99 | 1005.7 ms | 1010.5 ms |
+| Erros | 0.00% | 0.00% |
+| CPU média do banco | 99.2% | 98.4% |
+| Memória máxima do banco (limite 512 MiB) | 272.4 MiB | 225.3 MiB |
+| CPU média da API (limite 50%) | 5.6% | 6.6% |
+| Memória máxima da API (limite 256 MiB) | 29.1 MiB | 31.4 MiB |
+
+**Por rota** (mediana / p95, em ms)
+
+| Rota | 01 a 04 + 06 | 01 a 04 + 06 + 07 |
+|---|---|---|
+| `cliente` | 94.9 / 193.0 | 36.9 / 104.7 |
+| `cliente-por-email` | 95.6 / 194.0 | 34.4 / 103.8 |
+| `pedidos-do-cliente` | 119.1 / 294.1 | 100.1 / 198.1 |
+| `pedidos-por-status` | 305.7 / 1097.3 | 109.0 / 225.4 |
+| `busca-produtos` | 188.7 / 295.6 | 84.0 / 156.7 |
+| `vendas-por-dia` | 307.4 / 692.5 | 550.8 / 1226.2 |
+| `top-produtos` | 94.5 / 193.8 | 30.6 / 117.6 |
+
+### Conclusão
+
+Pelo critério definido antes de medir, a hipótese foi **confirmada**: contra a integração 01 a 04 + 06, a mediana de requisições/s subiu (110.23 → 161.25) e a de p95 geral caiu (497.8 → 482.9 ms), com o contrato mantido. Nas 3 execuções de cada lado, os valores não se sobrepõem: requisições/s de 108.16 a 112.03 antes e de 160.51 a 161.52 depois; p95 de 496.7 a 499.4 ms antes e de 480.5 a 483.9 ms depois.
+
+- **É o maior aumento de vazão desta rodada** (6661 → 9720 requisições em 60 s). Medida sozinha, sobre a aplicação original, a hipótese 07 não tinha sido confirmada (seção 07); sobre as outras, foi. De novo, um gargalo escondia o outro: lá o banco estava preso nas leituras de tabela inteira das outras rotas; aqui, `pedidos-por-status` era a rota que mais ocupava o banco.
+- **`pedidos-por-status` caiu de 305.7 para 109.0 ms de mediana e de 1097.3 para 225.4 ms de p95.** Com a CPU do banco liberada, quase todas as outras rotas também melhoraram: `cliente` foi de 94.9 para 36.9 ms de mediana, e `top-produtos`, de 94.5 para 30.6 ms.
+- **A exceção é `vendas-por-dia`**, que piorou (307.4 → 550.8 ms de mediana; 692.5 → 1226.2 ms de p95) e passou a ter 41.5% a 41.8% do tempo de espera dos usuários virtuais ([diagnostico/14](diagnostico/14-tempo-por-rota.txt), parte nova). Ela é a rota que mais trabalha no banco por requisição (lê ~13 mil itens e soma), e com o banco atendendo mais requisições por segundo ela disputa a CPU com mais consultas. É ela que mantém o p95 e o p99 gerais altos.
+- **O banco continua no limite** (98.4% de CPU) e a API continua com folga (6.6%).
+- **Custo:** nenhum serviço novo e nenhum limite alterado. O índice novo tem 21 MB, o mesmo tamanho do índice da hipótese 01 que ele substitui (diagnostico/10 e 21), então o disco ficou igual. A memória máxima do banco caiu de 272.4 para 225.3 MiB. O custo de escrita não foi medido.
