@@ -10,6 +10,10 @@ Coletado em 2026-11-09 sobre o commit `c959835` (aplicação sem mudanças). Cad
 | [02 a 08-explain-*.txt](.) | `EXPLAIN (ANALYZE, BUFFERS)` da consulta de cada rota, com parâmetros no formato que o teste de carga usa |
 | [09-conexoes-por-requisicao.txt](09-conexoes-por-requisicao.txt) | Tempo de cada rota sem carga e quantas conexões ao banco cada requisição abre |
 | [10-explain-com-indices.txt](10-explain-com-indices.txt) | Mesmas consultas de 02 a 08 com `banco/03-indices.sql` aplicado, e o tamanho de cada índice (hipótese 01) |
+| [11-conexoes-com-pool.txt](11-conexoes-com-pool.txt) | Conexões novas por requisição com o pool de conexões (hipótese 02) |
+| [13-explain-top-produtos-pre-calculado.txt](13-explain-top-produtos-pre-calculado.txt) | `EXPLAIN` de `top-produtos` lendo a visão materializada, custo do refresh e tamanho (hipótese 03) |
+| [14-tempo-por-rota.txt](14-tempo-por-rota.txt) | Parte do tempo de espera dos usuários virtuais em cada rota na integração 01+02+03, calculada dos `resumo-k6.json` (motivação da hipótese 04) |
+| [15-pedidos-do-cliente-uma-consulta.txt](15-pedidos-do-cliente-uma-consulta.txt) | Comandos SQL por requisição de `/clientes/:id/pedidos` antes e depois da consulta única, comparação com a lógica antiga e `EXPLAIN` (hipótese 04) |
 
 ## O que as evidências mostram
 

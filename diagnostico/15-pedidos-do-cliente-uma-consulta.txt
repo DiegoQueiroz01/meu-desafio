@@ -1,0 +1,80 @@
+# Hipótese 04 — /clientes/:id/pedidos com uma consulta (sem N+1)
+# Coletado em 2026-11-14 na branch hipotese/pedidos-do-cliente, sobre a aplicação original
+# (sem os índices da hipótese 01, sem o pool da hipótese 02), banco recriado do zero.
+
+## 1. Quantos comandos SQL uma requisição gera
+
+Método: log_statement='all' ligado só durante o teste (ALTER SYSTEM + pg_reload_conf, depois
+ALTER SYSTEM RESET); uma requisição de aquecimento, depois uma requisição medida, uma por vez,
+sem carga; conta as linhas "statement:"/"execute" que o banco registrou entre antes e depois.
+
+Antes (código original):
+/clientes/4242/pedidos  | 200 0.433117s 1622B | 5 pedidos, 10 itens | comandos SQL: 17
+/clientes/77/pedidos    | 200 0.435920s 1699B | 5 pedidos, 10 itens | comandos SQL: 17
+/clientes/31337/pedidos | 200 0.357586s 1660B | 5 pedidos, 10 itens | comandos SQL: 17
+
+Depois (uma consulta com JOIN):
+/clientes/4242/pedidos  | 200 0.060016s 1622B | 5 pedidos, 10 itens | comandos SQL: 2
+/clientes/77/pedidos    | 200 0.060305s 1699B | 5 pedidos, 10 itens | comandos SQL: 2
+/clientes/31337/pedidos | 200 0.062190s 1660B | 5 pedidos, 10 itens | comandos SQL: 2
+
+Antes: 1 (cliente) + 1 (pedidos) + 1 por pedido (itens) + 1 por item (produto).
+Depois: 1 (cliente, para o 404) + 1 (pedidos + itens + produtos).
+
+## 2. Tamanho médio do N+1 nos dados
+
+pedidos_por_cliente | itens_por_pedido | min_ped | max_ped | clientes_sem_pedido | pedidos_sem_item
+ 5.0000000000000000 | 3.0000000000000000 |       5 |       5 |                   0 |                0
+
+Todo cliente tem 5 pedidos; em média 3 itens por pedido. Em média, o código original faz
+1 + 1 + 5 + 15 = 22 comandos SQL por requisição (os 3 clientes acima têm 2 itens por pedido: 17).
+
+## 3. Mesma resposta: comparação com a lógica antiga
+
+Script executado dentro do container da API: para 300 clientes sorteados (gerador fixo, semente 12345),
+monta a resposta com a lógica antiga (N+1, mesmas consultas do código original) e compara o texto JSON
+com a resposta HTTP da rota nova.
+Resultado: clientes comparados: 300, iguais: 300, diferentes: 0
+O scripts/verificar-contrato.sh comparar também terminou em "Contrato mantido: as 42 respostas são iguais às gravadas."
+
+## 4. EXPLAIN (ANALYZE, BUFFERS) da consulta nova, sem índices (cliente 4242)
+                                                                      QUERY PLAN                                                                        
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+Gather Merge  (cost=41885.76..41887.16 rows=12 width=61) (actual time=195.642..200.091 rows=10 loops=1)
+  Workers Planned: 2
+  Workers Launched: 2
+  Buffers: shared hit=16188 read=14363
+  ->  Sort  (cost=40885.74..40885.75 rows=6 width=61) (actual time=193.953..193.956 rows=3 loops=3)
+        Sort Key: p.criado_em DESC, p.id DESC, i.id
+        Sort Method: quicksort  Memory: 25kB
+        Buffers: shared hit=16188 read=14363
+        Worker 0:  Sort Method: quicksort  Memory: 25kB
+        Worker 1:  Sort Method: quicksort  Memory: 25kB
+        ->  Nested Loop Left Join  (cost=23438.48..40885.66 rows=6 width=61) (actual time=105.022..193.928 rows=3 loops=3)
+              Buffers: shared hit=16152 read=14363
+              ->  Parallel Hash Right Join  (cost=23438.19..40883.83 rows=6 width=34) (actual time=105.006..193.897 rows=3 loops=3)
+                    Hash Cond: (i.pedido_id = p.id)
+                    Buffers: shared hit=16120 read=14363
+                    ->  Parallel Seq Scan on itens_pedido i  (cost=0.00..15805.00 rows=625000 width=20) (actual time=0.007..62.772 rows=500000 loops=3)
+                          Buffers: shared hit=9155 read=400
+                    ->  Parallel Hash  (cost=23438.17..23438.17 rows=2 width=18) (actual time=19.977..19.977 rows=2 loops=3)
+                          Buckets: 1024  Batches: 1  Memory Usage: 104kB
+                          Buffers: shared hit=6871 read=13963
+                          ->  Parallel Seq Scan on pedidos p  (cost=0.00..23438.17 rows=2 width=18) (actual time=6.445..19.736 rows=2 loops=3)
+                                Filter: (cliente_id = 4242)
+                                Rows Removed by Filter: 166665
+                                Buffers: shared hit=6871 read=13963
+              ->  Index Scan using produtos_pkey on produtos pr  (cost=0.29..0.31 rows=1 width=31) (actual time=0.007..0.007 rows=1 loops=10)
+                    Index Cond: (id = i.produto_id)
+                    Buffers: shared hit=32
+Planning:
+  Buffers: shared hit=219
+Planning Time: 0.576 ms
+Execution Time: 200.168 ms
+(31 rows)
+
+
+Para comparar (diagnostico/04): sem índices, a consulta de pedidos levou 19,281 ms e cada consulta de
+itens de um pedido 44,699 ms, lendo a itens_pedido inteira (Parallel Seq Scan). Com 5 pedidos, a rota
+original lê a itens_pedido inteira 5 vezes por requisição; a consulta nova lê uma vez.
+Estes tempos são de uma consulta por vez, sem carga: não são o resultado do experimento.
