@@ -4,7 +4,7 @@ Cada ideia testada vira uma linha na tabela e uma seção abaixo. Os números de
 
 | # | Ideia | Fonte | Status | Antes | Depois | Pastas | Conclusão |
 |---|---|---|---|---|---|---|---|
-| 05 | Log de acesso sem o corpo da resposta | [Node.js 20, A note on process I/O](https://nodejs.org/docs/latest-v20.x/api/process.html#a-note-on-process-io) | em medição | | | | |
+| 05 | Log de acesso sem o corpo da resposta | [Node.js 20, A note on process I/O](https://nodejs.org/docs/latest-v20.x/api/process.html#a-note-on-process-io) | aplicada sem ganho | 4.78 req/s, p95 14401.8 ms | 4.90 req/s, p95 14709.0 ms | `resultados/20261114-1707*`, `-1708*`, `-1710*` `-05-log-sem-corpo` | Sem ganho sozinha, como esperado: o gargalo é o banco (97.9% de CPU) e a API usa 5.5%; precisa ser medida na integração |
 
 ---
 
@@ -56,4 +56,44 @@ O contrato foi mantido: o log não faz parte da resposta HTTP.
 
 ### Resultado
 
-Ainda não medido.
+Medido em 2026-11-14 no commit `e5986af`, banco recriado do zero, contrato mantido nas 3 execuções. Cada valor é a mediana (o valor do meio) das 3 execuções, tirado dos `resumo.txt` e `recursos.txt` das pastas:
+
+- Antes: `resultados/20261104-094609-00-linha-de-base`, `20261104-095227-00-linha-de-base`, `20261104-095420-00-linha-de-base`
+- Depois: `resultados/20261114-170723-05-log-sem-corpo`, `20261114-170852-05-log-sem-corpo`, `20261114-171021-05-log-sem-corpo`
+
+**Geral**
+
+| Métrica | Antes | Depois |
+|---|---|---|
+| Requisições em 60 s | 308 | 317 |
+| Requisições/s | 4.78 | 4.90 |
+| Tempo de resposta, mediana | 800.1 ms | 792.7 ms |
+| Tempo de resposta, p95 | 14401.8 ms | 14709.0 ms |
+| Tempo de resposta, p99 | 16990.0 ms | 17747.4 ms |
+| Erros | 0.00% | 0.00% |
+| CPU média do banco | 99.8% | 97.9% |
+| Memória máxima do banco (limite 512 MiB) | 283.6 MiB | 289.0 MiB |
+| CPU média da API | 5.8% | 5.5% |
+| Memória máxima da API (limite 256 MiB) | 40.5 MiB | 41.5 MiB |
+
+**Por rota** (mediana / p95, em ms)
+
+| Rota | Antes | Depois |
+|---|---|---|
+| `cliente` | 203.2 / 497.8 | 200.0 / 397.6 |
+| `cliente-por-email` | 799.5 / 1401.1 | 803.4 / 1452.7 |
+| `pedidos-do-cliente` | 12177.9 / 16231.5 | 12696.9 / 16425.0 |
+| `pedidos-por-status` | 4598.7 / 14459.8 | 4345.4 / 8944.7 |
+| `busca-produtos` | 494.1 / 732.6 | 401.6 / 730.0 |
+| `vendas-por-dia` | 4614.2 / 6529.3 | 4568.0 / 6608.0 |
+| `top-produtos` | 9902.8 / 15539.6 | 18456.6 / 20505.6 |
+
+### Conclusão
+
+Pelo critério definido antes de medir, a hipótese foi **refutada quando medida sozinha: aplicada sem ganho**. A mediana de requisições/s subiu pouco (4.78 → 4.90), mas a faixa das 3 execuções se sobrepõe à da linha de base (4.43 a 4.93 depois, 4.71 a 4.79 antes), e a mediana de p95 geral piorou (14401.8 → 14709.0 ms).
+
+- **Era o esperado.** Na aplicação original o banco está no limite (97.9% de CPU) e a API passa quase todo o tempo esperando por ele. A CPU da API mal mudou (5.8% → 5.5%), porque ela já era pouca.
+- **As diferenças por rota são variação, não efeito da mudança.** `top-produtos` teve 4 requisições por execução, e sua mediana (9902.8 → 18456.6 ms) depende de quantas outras rotas pesadas rodavam ao mesmo tempo. O log não toca no banco.
+- **A mudança não piorou nada de forma consistente** e não mudou nenhuma resposta (contrato mantido).
+- **Custo:** nenhum recurso a mais. O log deixa de guardar o corpo de cada resposta (diagnostico/16: de 206–1983 bytes para 68–115 bytes por requisição).
+- **Limites:** a hipótese existe por causa da CPU da API na integração 01+02+03 (46.7% de 50%). Ela precisa ser medida na branch `integracao`; este teste isolado só mostra que, com o banco como gargalo, o log não importa.
