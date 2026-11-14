@@ -14,6 +14,7 @@ Coletado em 2026-11-09 sobre o commit `c959835` (aplicação sem mudanças). Cad
 | [13-explain-top-produtos-pre-calculado.txt](13-explain-top-produtos-pre-calculado.txt) | `EXPLAIN` de `top-produtos` lendo a visão materializada, custo do refresh e tamanho (hipótese 03) |
 | [14-tempo-por-rota.txt](14-tempo-por-rota.txt) | Parte do tempo de espera dos usuários virtuais em cada rota na integração 01+02+03, calculada dos `resumo-k6.json` (motivação da hipótese 04) |
 | [15-pedidos-do-cliente-uma-consulta.txt](15-pedidos-do-cliente-uma-consulta.txt) | Comandos SQL por requisição de `/clientes/:id/pedidos` antes e depois da consulta única, comparação com a lógica antiga e `EXPLAIN` (hipótese 04) |
+| [16-log-sem-corpo.txt](16-log-sem-corpo.txt) | Bytes de log por requisição antes e depois de tirar o corpo da resposta do log de acesso (hipótese 05) |
 
 ## O que as evidências mostram
 
