@@ -1,5 +1,7 @@
 # Experimentos
 
+#### Vídeo com explicação de cada hipótese testada: https://youtu.be/T66qCB5k80U
+
 Cada ideia testada vira uma linha na tabela e uma seção abaixo. Os números de desempenho vêm só de resultados/ (mediana de 3 execuções do scripts/medir.sh, com VUS=20, DURACAO=60s, SEMENTE=42). A linha de base são as 3 pastas resultados/*-00-linha-de-base/. As hipóteses são medidas primeiro isoladas, cada uma sobre a aplicação original (branch feature/diagnostico), contra a linha de base. As que têm ganho são juntadas na branch integracao e medidas de novo, combinadas, contra a medição acumulada anterior, porque os ganhos não se somam: um gargalo pode esconder o outro.
 
 | # | Ideia | Fonte | Status | Antes | Depois | Pastas | Conclusão |
